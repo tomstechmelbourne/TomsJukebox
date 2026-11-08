@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">Tom\'s Jukebox</string>
+    <string name="widget_small">Tom\'s Jukebox – Pill</string>
+    <string name="widget_medium">Tom\'s Jukebox – Medium</string>
+    <string name="widget_large">Tom\'s Jukebox – Large</string>
+</resources>
