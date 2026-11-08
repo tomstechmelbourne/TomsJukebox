@@ -28,7 +28,7 @@ data class Station(
     var paused: Boolean = false,  // "Tạm Ngưng" when no working stream was found
 )
 
-data class Podcast(val title: String, val author: String, val feed: String, val image: String)
+data class Podcast(val title: String, val author: String, val feed: String, val image: String, val id: String = "")
 
 data class Episode(
     val title: String, val url: String, val date: String, val durationS: Long,

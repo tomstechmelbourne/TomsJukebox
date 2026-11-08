@@ -76,7 +76,7 @@ fun EqScreen(act: MainActivity, th: JTheme) {
             Btn(t("Reset", "Về Phẳng"), th) { Core.applyPreset("flat") }
         }
         SwitchRow(t("Choose Automatically By Genre", "Tự Chọn Theo Thể Loại Nhạc"), th, Prefs.eqAutoGenre.value,
-            t("Rock → Rock, Bolero → Bolero, Hip-Hop → Hip-Hop…", "Rock → Rock, Bolero → Bolero, Hip-Hop → Hip-Hop…")) { Prefs.eqAutoGenre.value = it }
+            t("Rock → Rock, Bolero → Bolero, radio/podcast → Clear Voice…", "Rock → Rock, Bolero → Bolero, radio/podcast → Rõ Giọng Nói…")) { Prefs.eqAutoGenre.value = it }
         SectionTitle(t("Quick Bass / Treble", "Bass / Treble Nhanh"), th)
         SliderRow("Bass", th, Prefs.bass.value.toFloat(), -6f..12f, 17, "${Prefs.bass.value} dB") { Prefs.bass.value = it.toInt(); Core.service?.eq?.apply() }
         SliderRow("Treble", th, Prefs.treble.value.toFloat(), -6f..6f, 11, "${Prefs.treble.value} dB") { Prefs.treble.value = it.toInt(); Core.service?.eq?.apply() }
@@ -84,8 +84,14 @@ fun EqScreen(act: MainActivity, th: JTheme) {
             "Cân bằng trái/phải nằm trong Cài đặt điện thoại › Hỗ trợ › Cân bằng âm thanh."), color = th.muted, fontSize = 12.sp)
 
         SectionTitle(t("Visualisations", "Hiệu Ứng Sóng Nhạc"), th)
-        Visualizer(Modifier.fillMaxWidth().height(90.dp).padding(bottom = 8.dp))
-        FlowRow { (0 until 12).forEach { i -> Chip(VizStyles.name(i), Prefs.viz.value == i && !Prefs.vizAuto.value, th) { Prefs.viz.value = i; Prefs.vizAuto.value = false } } }
+        SwitchRow(t("Visualisations On", "Hiệu Ứng Sóng Nhạc: Bật"), th, Prefs.vizOn.value, t("Off saves battery.", "Tắt hết thì đỡ hao pin.")) { Prefs.vizOn.value = it }
+        if (Prefs.vizOn.value) {
+            SwitchRow(t("Waves In The Pill", "Sóng trong viên thuốc"), th, Prefs.vizPill.value) { Prefs.vizPill.value = it }
+            SwitchRow(t("Strip Under The Song Title", "Dải sóng dưới tên bài (Đang Phát)"), th, Prefs.vizStrip.value) { Prefs.vizStrip.value = it }
+            SwitchRow(t("Little Wave On The Bottom Bar", "Sóng nhỏ trên thanh điều hướng"), th, Prefs.vizNav.value) { Prefs.vizNav.value = it }
+            Visualizer(Modifier.fillMaxWidth().height(90.dp).padding(bottom = 8.dp))
+        }
+        FlowRow { VizStyles.names.indices.forEach { i -> Chip(VizStyles.name(i), Prefs.viz.value == i && !Prefs.vizAuto.value, th) { Prefs.viz.value = i; Prefs.vizAuto.value = false } } }
         SwitchRow(t("Change Automatically", "Tự Đổi Hiệu Ứng"), th, Prefs.vizAuto.value) { Prefs.vizAuto.value = it }
         SwitchRow(t("Follow The Real Music", "Theo Nhạc Thật"), th, Prefs.realViz.value,
             t("Android asks for the microphone permission for this; nothing is recorded.", "Android sẽ hỏi quyền micro cho việc này; không thâu gì cả.")) {

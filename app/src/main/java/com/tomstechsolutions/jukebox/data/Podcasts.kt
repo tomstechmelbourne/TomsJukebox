@@ -17,7 +17,32 @@ object Podcasts {
         }
     }
 
-    suspend fun episodes(p: Podcast): List<Episode> = withContext(Dispatchers.IO) {
+    /** Apple Podcasts top chart for a country (au, vn). Feed addresses are looked up when one is opened. */
+    suspend fun chart(country: String): List<Podcast> = withContext(Dispatchers.IO) {
+        val o = JSONObject(Net.get("https://rss.applemarketingtools.com/api/v2/$country/podcasts/top/25/podcasts.json"))
+        val arr = o.optJSONObject("feed")?.optJSONArray("results") ?: JSONArray()
+        (0 until arr.length()).map { arr.getJSONObject(it) }.map {
+            Podcast(it.optString("name"), it.optString("artistName"), "", it.optString("artworkUrl100").replace("100x100", "400x400"), it.optString("id"))
+        }
+    }
+
+    suspend fun searchIn(term: String, country: String = "au", limit: Int = 15): List<Podcast> = withContext(Dispatchers.IO) {
+        val o = JSONObject(Net.get("https://itunes.apple.com/search?media=podcast&country=$country&limit=$limit&term=${Net.enc(term)}"))
+        val arr = o.optJSONArray("results") ?: JSONArray()
+        (0 until arr.length()).map { arr.getJSONObject(it) }.filter { it.optString("feedUrl").isNotBlank() }.map {
+            Podcast(it.optString("collectionName"), it.optString("artistName"), it.optString("feedUrl"), it.optString("artworkUrl600"), it.optString("collectionId"))
+        }
+    }
+
+    suspend fun resolve(p: Podcast): Podcast = withContext(Dispatchers.IO) {
+        if (p.feed.isNotBlank() || p.id.isBlank()) return@withContext p
+        val o = JSONObject(Net.get("https://itunes.apple.com/lookup?id=${p.id}"))
+        val r = o.optJSONArray("results")?.optJSONObject(0)
+        p.copy(feed = r?.optString("feedUrl").orEmpty())
+    }
+
+    suspend fun episodes(p0: Podcast): List<Episode> = withContext(Dispatchers.IO) {
+        val p = resolve(p0)
         val xml = Net.get(p.feed, 15000)
         val parser = Xml.newPullParser()
         parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false)

@@ -37,6 +37,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -108,9 +109,42 @@ fun MoreScreen(act: MainActivity, th: JTheme) {
         if (Prefs.theme.value == "custom") HuePicker(Prefs.customAccent.value, th) { Prefs.customAccent.value = it }
 
         SectionTitle(t("Skin", "Skin"), th)
-        FlowRow { Skins.list.forEach { s -> Chip(s.name, Prefs.skin.value == s.key, th) { Prefs.skin.value = s.key } } }
-        if (Prefs.skin.value == "xp") FlowRow { Skins.xpColours.forEach { (k, n) -> Chip(n, Prefs.xpColour.value == k, th) { Prefs.xpColour.value = k } } }
-        Pill(Modifier.padding(vertical = 8.dp), big = false)
+        FlowRow { SkinList.keys.forEach { k -> Chip(SkinList.name(k), Prefs.skin.value == k, th) { Prefs.skin.value = k } } }
+        when (Prefs.skin.value) {
+            "xp" -> FlowRow { Skins.xpColours.forEach { (k, n) -> Chip(n, Prefs.xpColour.value == k, th) { Prefs.xpColour.value = k } } }
+            "grain" -> FlowRow { SkinList.woodTypes.forEachIndexed { i, (en, vi) -> Chip(t(en, vi), Prefs.woodType.value == i, th) { Prefs.woodType.value = i } } }
+            "marble" -> FlowRow { SkinList.marbleTypes.forEachIndexed { i, (en, vi) -> Chip(t(en, vi), Prefs.marbleType.value == i, th) { Prefs.marbleType.value = i } } }
+            "pill", "slim" -> FlowRow { PillColours.list.indices.forEach { i -> Chip(PillColours.name(i), Prefs.pillColour.value == i, th) { Prefs.pillColour.value = i } } }
+        }
+        Pill(Modifier.padding(vertical = 8.dp), big = true)
+        SliderRow(t("Pill Transparency", "Độ Trong Suốt Viên Thuốc"), th, 1f - Prefs.pillAlpha.value, 0f..0.95f, label = "${((1f - Prefs.pillAlpha.value) * 100).toInt()}%") { Prefs.pillAlpha.value = 1f - it }
+        SliderRow(t("Wave Strength", "Độ Đậm Sóng Nhạc"), th, Prefs.waveStrength.value, 0f..1.6f, label = "${(Prefs.waveStrength.value * 100).toInt()}%") { Prefs.waveStrength.value = it }
+        SliderRow(t("Wave Height", "Độ Cao Sóng"), th, Prefs.waveHeight.value, 0.2f..0.95f, label = "${(Prefs.waveHeight.value * 100).toInt()}%") { Prefs.waveHeight.value = it }
+        SwitchRow(t("Double-Tap The Pill To Change Colour", "Nhấp 2 Lần Để Đổi Màu"), th, Prefs.dblTapColour.value,
+            t("Off = the small pill opens Now Playing a little faster.", "Tắt thì viên thuốc nhỏ mở trang Đang Phát nhanh hơn một chút.")) { Prefs.dblTapColour.value = it }
+
+        SectionTitle(t("Play Buttons", "Kiểu Nút Phát Nhạc"), th)
+        FlowRow {
+            ButtonArt.names.indices.forEach { i ->
+                Column(Modifier.padding(end = 8.dp, bottom = 8.dp).width(100.dp).clip(RoundedCornerShape(14.dp))
+                    .background(if (Prefs.btnStyle.value == i) th.accent.copy(alpha = 0.22f) else th.card).clickable { Prefs.btnStyle.value = i }.padding(6.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        for (k in listOf(ButtonArt.PREV, ButtonArt.PLAY, ButtonArt.NEXT)) androidx.compose.foundation.Canvas(Modifier.size(if (k == ButtonArt.PLAY) 30.dp else 22.dp)) {
+                            androidx.compose.ui.graphics.drawscope.drawIntoCanvas { c -> ButtonArt.draw(c.nativeCanvas, k, i, size.width, (if (th.light) Color(0xFF1B2733) else Color.White).toArgb()) }
+                        }
+                    }
+                    Text(ButtonArt.name(i), color = th.text, fontSize = 11.sp, maxLines = 1)
+                }
+            }
+        }
+        Text(t("Button colour", "Màu nút"), color = th.text)
+        FlowRow { listOf("white" to t("White", "Trắng"), "cover" to t("From Cover", "Theo Ảnh Bìa"), "theme" to t("Theme Colour", "Màu Giao Diện"), "custom" to t("Custom", "Tự Chọn"))
+            .forEach { (k, n) -> Chip(n, Prefs.btnColour.value == k, th) { Prefs.btnColour.value = k } } }
+        if (Prefs.btnColour.value == "custom") HuePicker(Prefs.btnCustom.value, th) { Prefs.btnCustom.value = it }
+        Text(t("Button size", "Cỡ nút"), color = th.text)
+        FlowRow { listOf(0.85f to t("Small", "Nhỏ"), 1f to t("Medium", "Vừa"), 1.2f to t("Large", "To"), 1.45f to t("Very Large", "Rất To"))
+            .forEach { (v, n) -> Chip(n, Prefs.btnScale.value == v, th) { Prefs.btnScale.value = v } } }
 
         SectionTitle(t("Time Bar Colour", "Màu Thanh Thời Gian"), th)
         FlowRow {
@@ -137,8 +171,8 @@ fun MoreScreen(act: MainActivity, th: JTheme) {
         Card(th) {
             SwitchRow(t("Edge Lighting On", "Bật Ánh Sáng Chạy Viền"), th, Prefs.edgeOn.value, t("Only while music is playing.", "Chỉ chạy khi đang phát nhạc.")) { Prefs.edgeOn.value = it }
             FlowRow {
-                (0 until 12).forEach { i ->
-                    Column(Modifier.padding(end = 8.dp, bottom = 8.dp).width(96.dp).clickable { Prefs.edgeEffect.value = i; Prefs.edgeAuto.value = false },
+                EdgeEffects.names.indices.forEach { i ->
+                    Column(Modifier.padding(end = 8.dp, bottom = 8.dp).width(96.dp).clickable { Prefs.edgeEffect.value = i; Prefs.edgeAuto.value = false; Prefs.edgeRandom.value = false },
                         horizontalAlignment = Alignment.CenterHorizontally) {
                         Box(Modifier.size(96.dp, 56.dp).border(if (Prefs.edgeEffect.value == i && !Prefs.edgeAuto.value) 2.dp else 0.dp, th.accent, RoundedCornerShape(14.dp))) {
                             EdgePreview(i, Modifier.fillMaxSize())
@@ -163,7 +197,11 @@ fun MoreScreen(act: MainActivity, th: JTheme) {
             }
             SwitchRow(t("Pulse With The Beat", "Nhấp Nháy Theo Nhịp"), th, Prefs.edgeBeat.value) { Prefs.edgeBeat.value = it }
             SwitchRow(t("Change Effect Automatically", "Tự Đổi Hiệu Ứng"), th, Prefs.edgeAuto.value, t("A new effect every 30 seconds.", "Mỗi 30 giây đổi một kiểu.")) { Prefs.edgeAuto.value = it }
+            SwitchRow(t("Random For Each Song", "Ngẫu Nhiên Mỗi Bài"), th, Prefs.edgeRandom.value) { Prefs.edgeRandom.value = it; if (it) Prefs.edgeAuto.value = false }
             SwitchRow(t("Light The Screen Edge", "Chạy Viền Màn Hình"), th, Prefs.edgeScreen.value) { Prefs.edgeScreen.value = it }
+            val auto = Prefs.edgeCorner.value < 0f
+            SwitchRow(t("Match The Screen Corners Automatically", "Tự Khớp Góc Màn Hình"), th, auto, t("Turn off to set the corner yourself.", "Tắt để tự chỉnh độ bo góc.")) { Prefs.edgeCorner.value = if (it) -1f else 40f }
+            if (!auto) SliderRow(t("Corner Roundness", "Độ Bo Góc"), th, Prefs.edgeCorner.value, 0f..80f, label = "${Prefs.edgeCorner.value.toInt()} dp") { Prefs.edgeCorner.value = it }
         }
 
         // ---------- sleep, driving ----------
@@ -198,6 +236,21 @@ fun MoreScreen(act: MainActivity, th: JTheme) {
                 color = th.muted, fontSize = 12.sp)
         }
 
+        // ---------- hidden songs ----------
+        val hid = Prefs.hiddenSet()
+        if (hid.isNotEmpty()) {
+            SectionTitle(t("Hidden Songs", "Bài Đã Ẩn") + " (${hid.size})", th)
+            Card(th) {
+                hid.take(50).forEach { u ->
+                    val tr = com.tomstechsolutions.jukebox.data.Library.all.value.firstOrNull { it.uri == u }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(tr?.title ?: u.substringAfterLast('/'), color = th.text, fontSize = 14.sp, maxLines = 1, modifier = Modifier.weight(1f))
+                        Btn(t("Show Again", "Hiện Lại"), th) { Prefs.unhide(u); com.tomstechsolutions.jukebox.data.Library.refilter() }
+                    }
+                }
+            }
+        }
+
         // ---------- data ----------
         SectionTitle(t("Data", "Dữ Liệu"), th)
         Row {
@@ -223,7 +276,8 @@ fun MoreScreen(act: MainActivity, th: JTheme) {
             Card(th) {
                 if (Messages.list.isEmpty()) Text(t("No messages.", "Chưa có tin nhắn."), color = th.muted)
                 Messages.list.take(30).forEach { m ->
-                    Text(SimpleDateFormat("dd/MM HH:mm", Locale.US).format(Date(m.time)) + "  " + m.text, color = th.text, fontSize = 13.sp, modifier = Modifier.padding(vertical = 3.dp))
+                    Text(SimpleDateFormat("dd/MM HH:mm", Locale.US).format(Date(m.time)) + "  " + m.text, color = th.text, fontSize = 13.sp,
+                        modifier = Modifier.padding(vertical = 3.dp).clickable { if ("Recordings" in m.text) { act.openRecordings.value = true; act.tab.intValue = 1 } })
                 }
             }
         }

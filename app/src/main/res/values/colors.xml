@@ -6,4 +6,5 @@
     <color name="pill_top">#3A3330</color>
     <color name="pill_bottom">#1F1B19</color>
     <color name="text_soft">#E8DCD0</color>
+    <color name="icon_bg">#0D2A3B</color>
 </resources>

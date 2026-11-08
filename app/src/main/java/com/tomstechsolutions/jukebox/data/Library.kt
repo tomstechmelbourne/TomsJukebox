@@ -15,6 +15,11 @@ import kotlinx.coroutines.withContext
 /** The music already on the phone (MediaStore) plus folders Tom adds himself. Loaded lazily, off the main thread. */
 object Library {
     val tracks = mutableStateOf<List<Track>>(emptyList())
+    val all = mutableStateOf<List<Track>>(emptyList())
+
+    /** Re-apply the hidden list without scanning again. */
+    fun refilter() { val hid = Prefs.hiddenSet(); tracks.value = all.value.filter { it.uri !in hid }.sortedWith(compareBy({ it.artist.lowercase() }, { it.album.lowercase() }, { it.trackNo }, { it.title.lowercase() })) }
+    fun forget(uris: Collection<String>) { val s = uris.toSet(); all.value = all.value.filter { it.uri !in s }; tracks.value = tracks.value.filter { it.uri !in s } }
     val scanning = mutableStateOf(false)
     val loaded = mutableStateOf(false)
 
@@ -35,7 +40,9 @@ object Library {
                 } catch (_: Exception) { }
             }
         } catch (_: Exception) { }
-        tracks.value = out.values.sortedWith(compareBy({ it.artist.lowercase() }, { it.album.lowercase() }, { it.trackNo }, { it.title.lowercase() }))
+        val hid = Prefs.hiddenSet()
+        all.value = out.values.toList()
+        tracks.value = out.values.filter { it.uri !in hid }.sortedWith(compareBy({ it.artist.lowercase() }, { it.album.lowercase() }, { it.trackNo }, { it.title.lowercase() }))
         scanning.value = false
         loaded.value = true
     }

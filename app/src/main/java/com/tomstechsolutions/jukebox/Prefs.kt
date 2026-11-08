@@ -40,9 +40,24 @@ object Prefs {
     val barColour = p("bar_colour", "#FBB040")
     val customBar = p("custom_bar", 0xFF48B0C8.toInt())
     val textScale = p("text_scale", 1.0f)
+    val pillAlpha = p("pill_alpha", 1.0f)        // Độ Trong Suốt Viên Thuốc (1 = đặc)
+    val waveStrength = p("wave_strength", 1.0f)  // Độ Đậm Sóng Nhạc
+    val waveHeight = p("wave_height", 0.6f)      // Độ Cao Sóng
+    val pillColour = p("pill_colour", 0)         // màu nền khi nhấp 2 lần
+    val dblTapColour = p("dbl_tap_colour", true)
+    val woodType = p("wood_type", 0)
+    val marbleType = p("marble_type", 0)
+    val btnStyle = p("btn_style", 0)
+    val btnColour = p("btn_colour", "white")
+    val btnCustom = p("btn_custom", 0xFFFFFFFF.toInt())
+    val btnScale = p("btn_scale", 1.0f)
     // visualisations
     val viz = p("viz", 0)
     val vizAuto = p("viz_auto", false)
+    val vizOn = p("viz_on", true)
+    val vizPill = p("viz_pill", true)
+    val vizStrip = p("viz_strip", true)
+    val vizNav = p("viz_nav", true)
     val realViz = p("real_viz", false)
     // edge lighting
     val edgeOn = p("edge_on", true)
@@ -56,6 +71,8 @@ object Prefs {
     val edgeBeat = p("edge_beat", true)
     val edgeAuto = p("edge_auto", false)
     val edgeScreen = p("edge_screen", true)
+    val edgeRandom = p("edge_random", false)
+    val edgeCorner = p("edge_corner", -1f)       // -1 = tự lấy theo màn hình
     // sound
     val eqPreset = p("eq_preset", "flat")
     val eqCustom = p("eq_custom", "")          // json name -> 10 gains
@@ -86,6 +103,7 @@ object Prefs {
     // library
     val folders = p("folders", "")              // tree uris, one per line
     val favourites = p("favourites", "")        // uris, one per line
+    val hidden = p("hidden", "")                // songs hidden from the library
     val podcasts = p("podcasts", "[]")
     val playlists = p("playlists", "{}")
     val lastQueue = p("last_queue", "[]")
@@ -132,6 +150,11 @@ object Prefs {
             }
         }
     }
+
+    fun hiddenSet(): Set<String> = hidden.value.split('\n').filter { it.isNotBlank() }.toSet()
+    fun hide(uris: Collection<String>) { hidden.value = (hiddenSet() + uris).joinToString("\n") }
+    fun unhide(uri: String) { hidden.value = (hiddenSet() - uri).joinToString("\n") }
+    fun removeFav(uris: Collection<String>) { favourites.value = (favSet() - uris.toSet()).joinToString("\n") }
 
     fun favSet(): Set<String> = favourites.value.split('\n').filter { it.isNotBlank() }.toSet()
     fun toggleFav(uri: String): Boolean {

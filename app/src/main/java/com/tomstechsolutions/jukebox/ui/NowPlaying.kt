@@ -98,6 +98,17 @@ fun NowPlayingScreen(act: MainActivity, th: JTheme, embedded: Boolean, onClose: 
                 if (!embedded) IconBtn(Gl.down, Color.White) { onClose() } else Spacer(Modifier.width(44.dp))
                 Text(t("Now Playing", "Đang Phát"), color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, modifier = Modifier.weight(1f))
                 IconBtn(Gl.car, Color.White) { onDriving() }
+                Box {
+                    var menu by remember { mutableStateOf(false) }
+                    IconBtn(Gl.more, Color.White) { menu = true }
+                    androidx.compose.material3.DropdownMenu(menu, { menu = false }) {
+                        if (Core.kind.value == "track") {
+                            androidx.compose.material3.DropdownMenuItem({ Text(t("Hide From Library", "Bỏ Khỏi Thư Viện")) }, { menu = false; act.hideSongs(listOf(Core.uri.value)) })
+                            androidx.compose.material3.DropdownMenuItem({ Text(t("Delete From Phone", "Xoá Khỏi Máy")) }, { menu = false; act.deleteSongs(listOf(Core.uri.value)) })
+                        }
+                        androidx.compose.material3.DropdownMenuItem({ Text(t("Sleep Timer", "Hẹn Giờ Tắt Nhạc")) }, { menu = false; act.showSleep.value = true })
+                    }
+                }
             }
             if (tiny && view == 0) Spacer(Modifier.weight(1f))
             else Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -117,22 +128,18 @@ fun NowPlayingScreen(act: MainActivity, th: JTheme, embedded: Boolean, onClose: 
                 IconBtn(if (fav) Gl.starFull else Gl.star, if (fav) ORANGE else Color.White) { if (Core.uri.value.isNotBlank()) Prefs.toggleFav(Core.uri.value) }
             }
             if (Core.error.value.isNotBlank()) Text(Core.error.value, color = Color(0xFFFFB4A9), fontSize = 12.sp)
-            if (!short) Visualizer(Modifier.fillMaxWidth().height(46.dp).padding(vertical = 4.dp))
+            if (!short && Prefs.vizOn.value && Prefs.vizStrip.value) Visualizer(Modifier.fillMaxWidth().height(46.dp).padding(vertical = 4.dp))
             if (Prefs.skin.value == "ipod") IpodWheel()
             else Pill(Modifier.padding(vertical = 6.dp), big = true, onLong = { act.showSleep.value = true })
-            // extra buttons row
+            // extra buttons row: Danh Sách – Lời Bài Hát – Xáo Trộn – Lặp Lại – Hẹn Giờ – Chỉnh Âm – Kết Nối Thiết Bị
             Row(Modifier.fillMaxWidth().padding(bottom = 6.dp), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
+                IconBtn(Gl.queue, Color.White, 22.dp, active = view == 2) { view = if (view == 2) 0 else 2 }
+                IconBtn(Gl.lyrics, Color.White, 22.dp, active = view == 1) { view = if (view == 1) 0 else 1 }
                 IconBtn(Gl.shuffle, Color.White, 22.dp, active = Core.shuffle.value) { Core.toggleShuffle() }
                 IconBtn(if (Core.repeat.value == Player.REPEAT_MODE_ONE) Gl.repeatOne else Gl.repeat, Color.White, 22.dp, active = Core.repeat.value != Player.REPEAT_MODE_OFF) { Core.cycleRepeat() }
                 IconBtn(Gl.timer, Color.White, 22.dp, active = Core.sleepMode.value != "NONE") { act.showSleep.value = true }
-                IconBtn(Gl.lyrics, Color.White, 22.dp, active = view == 1) { view = if (view == 1) 0 else 1 }
-                IconBtn(Gl.queue, Color.White, 22.dp, active = view == 2) { view = if (view == 2) 0 else 2 }
                 IconBtn(Gl.eq, Color.White, 22.dp) { act.tab.intValue = 3; onClose() }
-                if (Core.kind.value == "radio")
-                    IconBtn(Gl.record, if (Core.recording.value) Color(0xFFFF5252) else Color.White, 22.dp, active = Core.recording.value) {
-                        if (Core.recording.value) Core.stopRecording() else Core.startRecording()
-                    }
-                else IconBtn(Gl.cast, Color.White, 22.dp) { openOutputSwitcher(ctx) }
+                IconBtn(Gl.cast, Color.White, 22.dp) { openOutputSwitcher(ctx) }
             }
         }
     }
@@ -141,15 +148,14 @@ fun NowPlayingScreen(act: MainActivity, th: JTheme, embedded: Boolean, onClose: 
 
 private fun Color.compositeOverDark(): Color = Color(red * alpha + 0.06f * (1 - alpha), green * alpha + 0.05f * (1 - alpha), blue * alpha + 0.05f * (1 - alpha), 1f)
 
-/** Big cover with the record peeking out. Swipe left/right = next/previous, double-tap = favourite ★. */
+/** Big cover in the middle. Swipe left/right = next/previous, double-tap = favourite ★. */
 @Composable
 fun CoverArea() {
     val art = Core.art.value
     var drag by remember { mutableFloatStateOf(0f) }
     var heart by remember { mutableStateOf(0L) }
     val off by animateFloatAsState(drag, label = "drag")
-    val clock by rememberClock()
-    Box(Modifier.fillMaxWidth().aspectRatio(1.18f, matchHeightConstraintsFirst = true)
+    Box(Modifier.fillMaxSize()
         .pointerInput(Unit) {
             detectHorizontalDragGestures(onDragEnd = {
                 if (drag < -120) Core.next() else if (drag > 120) Core.prev()
@@ -160,22 +166,14 @@ fun CoverArea() {
             detectTapGestures(onDoubleTap = {
                 if (Core.uri.value.isNotBlank()) { if (Prefs.toggleFav(Core.uri.value)) heart = System.currentTimeMillis() }
             })
-        }, contentAlignment = Alignment.CenterStart) {
-        Box(Modifier.fillMaxSize(0.92f).aspectRatio(1f).offset { IntOffset((off * 0.5f).roundToInt(), 0) }.padding(start = 40.dp)) {
-            Box(Modifier.align(Alignment.CenterEnd).fillMaxSize(0.96f).offset(x = 36.dp)) { Disc(260.dp, clock) }
-        }
-        Box(Modifier.fillMaxSize(0.82f).aspectRatio(1f).offset { IntOffset(off.roundToInt(), 0) }.clip(RoundedCornerShape(26.dp))
-            .background(Color(0xFF1C2A33)), contentAlignment = Alignment.Center) {
+        }, contentAlignment = Alignment.Center) {
+        Box(Modifier.fillMaxSize(0.9f).aspectRatio(1f, matchHeightConstraintsFirst = true).offset { IntOffset(off.roundToInt(), 0) }
+            .clip(RoundedCornerShape(26.dp)).background(Color(0xFF1C2A33)), contentAlignment = Alignment.Center) {
             if (art != null) Image(art.asImageBitmap(), null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
             else G(Gl.note, Color(0x66FFFFFF), 96.dp)
         }
         val since = System.currentTimeMillis() - heart
-        if (since < 900) {
-            val s = 1f + since / 900f * 0.6f
-            Box(Modifier.fillMaxSize(0.82f).aspectRatio(1f), contentAlignment = Alignment.Center) {
-                G(Gl.starFull, ORANGE.copy(alpha = 1f - since / 900f), (90 * s).dp)
-            }
-        }
+        if (since < 900) G(Gl.starFull, ORANGE.copy(alpha = 1f - since / 900f), (90 * (1f + since / 900f * 0.6f)).dp)
     }
 }
 
@@ -279,11 +277,13 @@ fun DrivingScreen(th: JTheme, onClose: () -> Unit) {
             Text(Core.artist.value, color = Color(0xFFBBBBBB), fontSize = 22.sp, maxLines = 1, textAlign = TextAlign.Center)
             Spacer(Modifier.height(30.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconBtn(Gl.prev, Color.White, 64.dp, pad = 18.dp) { Core.prev() }
-                Spacer(Modifier.width(20.dp))
-                Box(Modifier.clip(CircleShape).background(ORANGE)) { IconBtn(if (Core.playing.value) Gl.pause else Gl.play, ON_ORANGE, 72.dp, pad = 26.dp) { Core.toggle() } }
-                Spacer(Modifier.width(20.dp))
-                IconBtn(Gl.next, Color.White, 64.dp, pad = 18.dp) { Core.next() }
+                val bc = buttonColour(Color.White)
+                if (Core.kind.value == "radio") CtlBtn(if (Core.recording.value) ButtonArt.REC_STOP else ButtonArt.REC, 72.dp, bc) { if (Core.recording.value) Core.stopRecording() else Core.startRecording() }
+                else CtlBtn(ButtonArt.PREV, 72.dp, bc, seekDir = -1) { Core.prev() }
+                Spacer(Modifier.width(16.dp))
+                CtlBtn(if (Core.playing.value) ButtonArt.PAUSE else ButtonArt.PLAY, 96.dp, bc) { Core.toggle() }
+                Spacer(Modifier.width(16.dp))
+                CtlBtn(ButtonArt.NEXT, 72.dp, bc, seekDir = if (Core.kind.value == "radio") 0 else 1) { if (Core.kind.value == "radio") Core.nextStation() else Core.next() }
             }
             Spacer(Modifier.height(20.dp))
             TimeBar(Modifier.fillMaxWidth(), 8.dp, 10.dp)

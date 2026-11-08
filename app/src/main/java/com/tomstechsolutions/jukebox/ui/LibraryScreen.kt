@@ -105,7 +105,7 @@ fun LibraryScreen(act: MainActivity, th: JTheme) {
         }
         SearchBox(query, t("Search songs, artists, albums", "Tìm bài hát, ca sĩ, album"), th) { query = it }
         val tabs = listOf(t("Songs", "Bài Hát"), "Album", t("Artists", "Nghệ Sĩ"), t("Folders", "Thư Mục"), t("Playlists", "Danh Sách"),
-            t("Favourites", "Yêu Thích"), t("Now Playing", "Đang Phát"))
+            t("Favourites", "Yêu Thích"), t("Now Playing", "Đang Phát"), "● " + t("Recordings", "Bản Thâu Âm"))
         Row(Modifier.horizontalScroll(rememberScrollState())) { tabs.forEachIndexed { i, s -> Chip(s, view == i, th) { view = i; group = null } } }
         Row(Modifier.horizontalScroll(rememberScrollState())) {
             Btn(t("+ Add Songs…", "+ Thêm Bài Hát…"), th) { addFiles.launch(arrayOf("audio/*")) }
@@ -117,6 +117,7 @@ fun LibraryScreen(act: MainActivity, th: JTheme) {
         fun match(t: Track) = q.isEmpty() || t.title.lowercase().contains(q) || t.artist.lowercase().contains(q) || t.album.lowercase().contains(q)
         Box(Modifier.weight(1f)) {
             when {
+                view == 7 -> RecordingsScreen(act, th) { view = 0 }
                 view == 6 -> QueueView(th.copy(), Modifier.fillMaxSize())
                 group != null -> {
                     val list = when (view) {
@@ -177,9 +178,18 @@ fun TrackList(list: List<Track>, th: JTheme) {
         Text(if (Library.scanning.value) t("Looking for music…", "Đang tìm nhạc…") else t("No songs here yet.", "Chưa có bài nào."), color = th.muted, modifier = Modifier.padding(16.dp))
         return
     }
+    val act = LocalContext.current as? MainActivity
     val fav = Prefs.favSet()
+    var selected by remember { mutableStateOf<Set<String>>(emptySet()) }
+    val selecting = selected.isNotEmpty()
     Column {
-        Row {
+        if (selecting) Row(Modifier.horizontalScroll(rememberScrollState()), verticalAlignment = Alignment.CenterVertically) {
+            Text(t("Selected: ", "Đã chọn: ") + selected.size, color = th.accent, fontWeight = FontWeight.Bold, modifier = Modifier.padding(end = 10.dp))
+            Btn(t("Select All", "Chọn Hết"), th) { selected = list.map { it.uri }.toSet() }
+            Btn(t("Hide", "Bỏ Khỏi Thư Viện"), th) { act?.hideSongs(selected.toList()); selected = emptySet() }
+            Btn(t("Delete", "Xoá") + " (${selected.size})", th, Gl.trash, primary = true) { act?.deleteSongs(selected.toList()); selected = emptySet() }
+            Btn(t("Cancel", "Huỷ"), th) { selected = emptySet() }
+        } else Row {
             Btn(t("Play All", "Phát Tất Cả"), th, Gl.play, primary = true) { Core.playTracks(list) }
             Btn(t("Shuffle", "Trộn Bài"), th, Gl.shuffle) { Core.playTracks(list, (list.indices).random(), shuffled = true) }
             Text("${list.size} " + t("songs", "bài"), color = th.muted, fontSize = 12.sp, modifier = Modifier.padding(top = 12.dp))
@@ -187,12 +197,14 @@ fun TrackList(list: List<Track>, th: JTheme) {
         LazyColumn(verticalArrangement = Rows) {
             itemsIndexed(list, key = { _, it -> it.uri }) { i, tr ->
                 var menu by remember { mutableStateOf(false) }
-                Row2(tr.title, listOf(tr.artist, tr.album).filter { it.isNotBlank() }.joinToString(" · "), th, selected = tr.uri == Core.uri.value,
-                    leading = { Cover(tr.uri, tr.albumId, 48.dp, th) },
+                val isSel = tr.uri in selected
+                fun toggleSel() { selected = if (isSel) selected - tr.uri else selected + tr.uri }
+                Row2(tr.title, listOf(tr.artist, tr.album).filter { it.isNotBlank() }.joinToString(" · "), th, selected = isSel || (!selecting && tr.uri == Core.uri.value),
+                    leading = { if (selecting) G(if (isSel) Gl.check else Gl.plus, if (isSel) th.accent else th.muted, 40.dp) else Cover(tr.uri, tr.albumId, 48.dp, th) },
                     trailing = {
                         if (tr.durationMs > 0) Text(fmtTime(tr.durationMs), color = th.muted, fontSize = 12.sp)
                         if (tr.uri in fav) G(Gl.starFull, ORANGE, 16.dp, Modifier.padding(start = 6.dp))
-                        Box {
+                        if (!selecting) Box {
                             IconBtn(Gl.more, th.muted, 20.dp, pad = 8.dp) { menu = true }
                             DropdownMenu(menu, { menu = false }) {
                                 DropdownMenuItem({ Text(t("Play Next", "Phát Tiếp Theo")) }, { Core.addToQueue(listOf(tr), next = true); menu = false })
@@ -203,9 +215,12 @@ fun TrackList(list: List<Track>, th: JTheme) {
                                     var n = 1; while (Playlists.all().containsKey(t("Playlist ", "Danh Sách ") + n)) n++
                                     Playlists.add(t("Playlist ", "Danh Sách ") + n, listOf(tr.uri)); menu = false
                                 })
+                                DropdownMenuItem({ Text(t("Select Several…", "Chọn Nhiều Bài…")) }, { menu = false; selected = setOf(tr.uri) })
+                                DropdownMenuItem({ Text(t("Hide From Library", "Bỏ Khỏi Thư Viện")) }, { menu = false; act?.hideSongs(listOf(tr.uri)) })
+                                DropdownMenuItem({ Text(t("Delete From Phone", "Xoá Khỏi Máy"), color = androidx.compose.ui.graphics.Color(0xFFE53935)) }, { menu = false; act?.deleteSongs(listOf(tr.uri)) })
                             }
                         }
-                    }) { Core.playTracks(list, i) }
+                    }, onLong = { toggleSel() }) { if (selecting) toggleSel() else Core.playTracks(list, i) }
             }
         }
     }

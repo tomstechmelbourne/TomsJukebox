@@ -136,6 +136,7 @@ object Core {
             "podcast" -> "Podcast"
             else -> tr?.mime?.substringAfter('/')?.uppercase()?.replace("MPEG", "MP3")?.replace("X-FLAC", "FLAC") ?: ""
         }
+        if (Prefs.eqAutoGenre.value && (q?.kind == "radio" || q?.kind == "podcast") && Prefs.eqPreset.value != "voice") applyPreset("voice")
         if (Prefs.eqAutoGenre.value && tr != null && tr.genre.isNotBlank()) {
             EqPresets.forGenre(tr.genre)?.let { k -> if (k != Prefs.eqPreset.value) applyPreset(k) }
         }
@@ -219,6 +220,16 @@ object Core {
     fun removeAt(i: Int) { controller?.removeMediaItem(i) }
     fun move(from: Int, to: Int) { controller?.let { if (to in 0 until it.mediaItemCount) it.moveMediaItem(from, to) } }
     fun clearQueue() { controller?.clearMediaItems() }
+    fun removeUris(uris: Set<String>) { controller?.let { c -> for (i in c.mediaItemCount - 1 downTo 0) if (c.getMediaItemAt(i).mediaId in uris) c.removeMediaItem(i) } }
+
+    /** Stations shown when one was started, so ⏭ goes to the next station. */
+    var radioList: List<Station> = emptyList()
+    fun nextStation() {
+        val cur = station.value ?: return
+        if (radioList.isEmpty()) return
+        val i = radioList.indexOfFirst { it.name == cur.name }
+        playStation(radioList[(i + 1).mod(radioList.size)])
+    }
     fun volumeUp() { service?.volumeStep(+1) }
     fun volumeDown() { service?.volumeStep(-1) }
 

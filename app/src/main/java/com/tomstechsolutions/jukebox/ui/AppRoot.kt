@@ -112,7 +112,15 @@ private fun AppBody(act: MainActivity, th: JTheme) {
                 BottomNav(act, th)
             }
         }
-        if (Prefs.edgeOn.value && Prefs.edgeScreen.value && Prefs.edgeWhere.value != "pill") EdgeLight(Modifier.fillMaxSize(), 30.dp)
+        if (Prefs.edgeOn.value && Prefs.edgeScreen.value && Prefs.edgeWhere.value != "pill") EdgeLight(Modifier.fillMaxSize(), screenCorner())
+        if (act.confirmDelete.value.isNotEmpty()) {
+            val n = act.confirmDelete.value.size
+            androidx.compose.material3.AlertDialog(onDismissRequest = { act.confirmDelete.value = emptyList() },
+                title = { Text(t("Delete From Phone?", "Xoá khỏi máy?")) },
+                text = { Text(t("$n song(s) will be deleted permanently.", "$n bài sẽ bị xoá hẳn khỏi điện thoại.")) },
+                confirmButton = { androidx.compose.material3.TextButton(onClick = { val l = act.confirmDelete.value; act.confirmDelete.value = emptyList(); act.doDelete(l) }) { Text(t("Delete", "Xoá"), color = Color(0xFFE53935)) } },
+                dismissButton = { androidx.compose.material3.TextButton(onClick = { act.confirmDelete.value = emptyList() }) { Text(t("Cancel", "Huỷ")) } })
+        }
 
         AnimatedVisibility(act.openNow.value && !wide, enter = slideInVertically { it } + fadeIn(), exit = slideOutVertically { it } + fadeOut()) {
             NowPlayingScreen(act, th, embedded = false, onClose = { act.openNow.value = false }, onDriving = { driving = true })
@@ -165,7 +173,7 @@ fun BottomNav(act: MainActivity, th: JTheme) {
     Box(Modifier.fillMaxWidth().background(th.nav)) {
         // little music wave along the top edge of the bar
         Canvas(Modifier.fillMaxWidth().height(10.dp)) {
-            if (!Core.playing.value || Anim.lowPower.value) return@Canvas
+            if (!Core.playing.value || Anim.lowPower.value || !Prefs.vizOn.value || !Prefs.vizNav.value) return@Canvas
             val lv = levelsAt(clock); val cols = Core.palette.value
             val p = Path().apply { moveTo(0f, 0f) }
             for (k in 0..48) {

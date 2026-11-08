@@ -7,7 +7,11 @@ import com.tomstechsolutions.jukebox.t
  * so a station that changes its stream address keeps working; one that can't be found is shown as "Tạm Ngưng".
  */
 object Stations {
+    /** SBS Việt ngữ is a daily programme on SBS Radio 1 (SBS's own stream server). */
+    val sbsViet = Station("SBS Tiếng Việt (SBS Radio 1)", "SBS Radio 1", "AU", "AUVN", "viet", "https://sbs-ice.streamguys1.com/sbs1-sbs-web", 0, "AAC")
+
     val all: List<Station> = listOf(
+        sbsViet,
         Station("ABC NewsRadio", "ABC NewsRadio", "AU", "NAT", "news"),
         Station("ABC Radio National", "ABC Radio National", "AU", "NAT", "news"),
         Station("triple j", "triple j", "AU", "NAT", "pop"),

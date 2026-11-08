@@ -1,5 +1,10 @@
 package com.tomstechsolutions.jukebox.ui
 
+import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -9,6 +14,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,8 +29,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -35,14 +44,21 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -53,23 +69,6 @@ import com.tomstechsolutions.jukebox.t
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-data class SkinStyle(val bg: List<Color>, val text: Color, val sub: Color, val btn: Color, val border: Color,
-                     val radius: Dp?, val gloss: Boolean = false, val waves: Boolean = true)
-
-fun skinStyle(): SkinStyle = when (Prefs.skin.value) {
-    "xp" -> when (Prefs.xpColour.value) {
-        "silver" -> SkinStyle(listOf(Color(0xFFF6F6FA), Color(0xFFDADBE5), Color(0xFFB4B6C6)), Color(0xFF1E2333), Color(0xFF4A5068), Color(0xFF2B3550), Color(0xFF8D90A6), 18.dp, true)
-        "olive" -> SkinStyle(listOf(Color(0xFFC9D8A0), Color(0xFF93A867), Color(0xFF5B7638)), Color.White, Color(0xFFF1F6E2), Color.White, Color(0xFF3F5424), 18.dp, true)
-        else -> SkinStyle(listOf(Color(0xFF4A8BF0), Color(0xFF2159CC), Color(0xFF0F3C9E)), Color.White, Color(0xFFDCE8FF), Color.White, Color(0xFF0B2F7A), 18.dp, true)
-    }
-    "metal" -> SkinStyle(listOf(Color(0xFFA5ADB7), Color(0xFF656D78), Color(0xFF3A4048), Color(0xFF727A85)), Color.White, Color(0xFFE6EAEE), Color.White, Color(0xFF2A2F35), 14.dp)
-    "wood" -> SkinStyle(listOf(Color(0xFF8B5A2B), Color(0xFF5C3A1A), Color(0xFF3E2612)), Color(0xFFFCE9C8), Color(0xFFE2C79A), Color(0xFFFCE9C8), Color(0xFF2A190B), 16.dp)
-    "glass" -> SkinStyle(listOf(Color(0x33FFFFFF), Color(0x1AFFFFFF)), Color.White, Color(0xFFE6F2F7), Color.White, Color(0x66FFFFFF), null)
-    "ipod" -> SkinStyle(listOf(Color(0xFFFAFAFA), Color(0xFFE1E3E7)), Color(0xFF111111), Color(0xFF555555), Color(0xFF222222), Color(0xFFB8BCC2), 22.dp, waves = false)
-    else -> SkinStyle(listOf(Color(0xFF3A3330), Color(0xFF1F1B19)), Color.White, Color(0xFFE8DCD0), Color.White, Color(0x30FFFFFF), null)
-}
-
-/** The spinning cover disc. */
 @Composable
 fun Disc(size: Dp, clock: Float) {
     val art = Core.art.value
@@ -119,20 +118,62 @@ fun TimeBar(modifier: Modifier, thick: Dp, knob: Dp) {
     }
 }
 
-/** Prev/next: tap = change song, hold = fast seek. */
+/** Colour the buttons are painted in (Trắng / Theo Ảnh Bìa / Màu Giao Diện / Tự Chọn). */
+fun buttonColour(skinBtn: Color, accent: Color = ORANGE): Color = when (Prefs.btnColour.value) {
+    "cover" -> Color(Core.palette.value[0])
+    "theme" -> accent
+    "custom" -> Color(Prefs.btnCustom.value)
+    else -> skinBtn
+}
+
+/** One play/pause/prev/next/record button in the chosen button set. Hold prev/next to fast-seek. */
 @Composable
-fun SeekBtn(id: Int, dir: Int, tint: Color, size: Dp, onTap: () -> Unit) {
+fun CtlBtn(kind: Int, size: Dp, colour: Color, seekDir: Int = 0, onClick: () -> Unit) {
     val scope = rememberCoroutineScope()
     val hp = haptic()
-    Box(Modifier.clip(CircleShape).pointerInput(Unit) {
+    var pressed by remember { mutableStateOf(false) }
+    val s = size * Prefs.btnScale.value
+    val glow = if (Prefs.btnStyle.value == 6) levelsAt(System.nanoTime() / 1e9f).take(4).average().toFloat() else 0f
+    Box(Modifier.size(s + 8.dp).clip(CircleShape).pointerInput(seekDir) {
         detectTapGestures(onPress = {
+            pressed = true
             var held = false
-            val job = scope.launch { delay(450); held = true; hp(); while (true) { Core.seekBy(dir * 10_000L); delay(250) } }
+            val job = if (seekDir != 0) scope.launch { delay(450); held = true; hp(); while (true) { Core.seekBy(seekDir * 10_000L); delay(250) } } else null
             tryAwaitRelease()
-            job.cancel()
-            if (!held) { hp(); onTap() }
+            job?.cancel(); pressed = false
+            if (!held) { hp(); onClick() }
         })
-    }.padding(8.dp)) { G(id, tint, size) }
+    }, contentAlignment = Alignment.Center) {
+        Canvas(Modifier.size(s)) {
+            drawIntoCanvas { ButtonArt.draw(it.nativeCanvas, kind, Prefs.btnStyle.value, size.toPx() * Prefs.btnScale.value, colour.toArgb(), pressed, glow) }
+        }
+    }
+}
+
+/** Phone tilt for the Liquid Glass shimmer (-1..1). */
+@Composable
+fun rememberTilt(active: Boolean): Float {
+    val ctx = LocalContext.current
+    var tilt by remember { mutableFloatStateOf(0f) }
+    DisposableEffect(active) {
+        val sm = ctx.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        val l = object : SensorEventListener {
+            override fun onSensorChanged(e: SensorEvent) { tilt = tilt * 0.85f + (-e.values[0] / 9.8f).coerceIn(-1f, 1f) * 0.15f }
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+        }
+        if (active) sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.let { sm.registerListener(l, it, SensorManager.SENSOR_DELAY_UI) }
+        onDispose { sm.unregisterListener(l) }
+    }
+    return tilt
+}
+
+/** Double-tap: next colour (or next wood / marble / XP variant). Returns the name to show. */
+fun cycleSkinColour(): String = when (Prefs.skin.value) {
+    "grain" -> { Prefs.woodType.value = (Prefs.woodType.value + 1) % 3; SkinList.woodTypes[Prefs.woodType.value].let { t(it.first, it.second) } }
+    "marble" -> { Prefs.marbleType.value = (Prefs.marbleType.value + 1) % 3; SkinList.marbleTypes[Prefs.marbleType.value].let { t(it.first, it.second) } }
+    "xp" -> { val l = listOf("blue", "silver", "olive"); val i = (l.indexOf(Prefs.xpColour.value) + 1) % 3; Prefs.xpColour.value = l[i]; Skins.xpColours[i].second }
+    "pill", "slim" -> { Prefs.pillColour.value = (Prefs.pillColour.value + 1) % PillColours.list.size; PillColours.name(Prefs.pillColour.value) }
+    else -> t("This skin has one colour – try Pill, Wood Grain or Marble", "Skin này chỉ có một màu – thử Viên Thuốc, Vân Gỗ hoặc Cẩm Thạch")
 }
 
 /** The Tom's Dock pill: two rows when big (Now Playing / lock screen), one row at the bottom of the app. */
@@ -143,54 +184,71 @@ fun Pill(modifier: Modifier = Modifier, big: Boolean, onOpen: () -> Unit = {}, o
     val st = skinStyle()
     val slim = Prefs.skin.value == "slim"
     val h = when { big && slim -> 104.dp; big -> 150.dp; slim -> 56.dp; else -> 72.dp }
-    val shape = RoundedCornerShape(st.radius ?: (h / 2))
+    val radius = st.radius ?: (h / 2)
+    val shape = RoundedCornerShape(radius)
     var dragX by remember { mutableFloatStateOf(0f) }
+    var toast by remember { mutableStateOf("") }
+    var toastAt by remember { mutableLongStateOf(0L) }
+    LaunchedEffect(toastAt) { if (toastAt > 0) { delay(1100); toast = "" } }
+    val tilt = rememberTilt(Prefs.skin.value == "liquid")
     val edgeHere = Prefs.edgeOn.value && Prefs.edgeWhere.value != "window"
+    val radio = Core.kind.value == "radio"
+    val btnCol = buttonColour(st.btn)
+    val hp = haptic()
     Box(modifier.fillMaxWidth().height(h)) {
         Box(
             Modifier.fillMaxSize().clip(shape)
                 .drawBehind {
-                    drawRect(Brush.verticalGradient(st.bg))
-                    if (st.gloss) drawRoundRect(Brush.verticalGradient(listOf(Color(0x66FFFFFF), Color(0x10FFFFFF)), 0f, size.height / 2),
-                        Offset(6f, 3f), Size(size.width - 12f, size.height / 2 - 3f), CornerRadius(size.height / 3))
-                    if (Prefs.skin.value == "metal") for (yy in 0 until size.height.toInt() step 3) drawLine(Color(0x0FFFFFFF), Offset(0f, yy.toFloat()), Offset(size.width, yy.toFloat()))
-                    if (st.waves && !Anim.lowPower.value) waves(clock, levelsAt(clock), Core.palette.value.map { Color(it) }, 0.42f)
+                    val alpha = Prefs.pillAlpha.value.coerceIn(0.05f, 1f)
+                    drawIntoCanvas { c ->
+                        c.saveLayer(Rect(Offset.Zero, size), Paint().apply { this.alpha = alpha })
+                        paintSkin(clock, tilt)
+                        c.restore()
+                    }
+                    if (st.waves && Prefs.vizOn.value && Prefs.vizPill.value && !Anim.lowPower.value)
+                        waves(clock, levelsAt(clock), Core.palette.value.map { Color(it) }, Prefs.waveHeight.value, Prefs.waveStrength.value)
+                    paintSkinBorder(radius.toPx(), st.border)
                 }
-                .border(1.dp, st.border, shape)
                 .pointerInput(Unit) {
                     detectHorizontalDragGestures(onDragEnd = {
                         if (Prefs.swipePill.value) { if (dragX < -80) Core.next() else if (dragX > 80) Core.prev() }
                         dragX = 0f
                     }) { _, dx -> dragX += dx }
                 }
-                .combinedClickable(onClick = onOpen, onLongClick = onLong),
+                .combinedClickable(onClick = onOpen, onLongClick = onLong,
+                    onDoubleClick = if (Prefs.dblTapColour.value) ({ hp(); toast = cycleSkinColour(); toastAt = System.currentTimeMillis() }) else null),
         ) {
             val title = Core.title.value.ifBlank { "Tom's Jukebox" }
             val sub = listOf(Core.artist.value, Core.album.value).filter { it.isNotBlank() }.joinToString(" · ")
-            val playId = if (Core.playing.value) Gl.pause else Gl.play
+            val playKind = if (Core.playing.value) ButtonArt.PAUSE else ButtonArt.PLAY
+            val recKind = if (Core.recording.value) ButtonArt.REC_STOP else ButtonArt.REC
+            val toggleRec = { if (Core.recording.value) Core.stopRecording() else Core.startRecording() }
             if (big) androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxSize()) {
-                val discSize = minOf(h - if (slim) 16.dp else 22.dp, maxWidth * 0.3f)
-                Row(Modifier.fillMaxSize().padding(start = if (slim) 8.dp else 11.dp, top = if (slim) 8.dp else 11.dp, bottom = if (slim) 8.dp else 11.dp, end = if (st.radius == null) h / 5 else 14.dp), verticalAlignment = Alignment.CenterVertically) {
+                val pad = if (slim) 8.dp else 11.dp
+                val discSize = minOf(h - pad * 2, maxWidth * 0.3f)
+                Row(Modifier.fillMaxSize().padding(start = pad, top = pad, bottom = pad, end = if (st.radius == null) h / 5 else 14.dp), verticalAlignment = Alignment.CenterVertically) {
                     Disc(discSize, clock)
                     Spacer(Modifier.width(10.dp))
-                    Column(Modifier.weight(1f)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(title, color = st.text, fontSize = 17.sp, fontWeight = FontWeight.Bold, maxLines = 1, modifier = Modifier.weight(1f).basicMarquee())
+                    Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(title, color = st.text, fontSize = 17.sp, fontWeight = FontWeight.Bold, maxLines = 1, textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth().basicMarquee())
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+                            Text(listOf(sub, Core.format.value).filter { it.isNotBlank() }.joinToString("  ·  "), color = st.sub, fontSize = 12.sp, maxLines = 1,
+                                overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center, modifier = Modifier.weight(1f, fill = false))
                             SleepBadge(st.text)
                         }
-                        Text(listOf(sub, Core.format.value).filter { it.isNotBlank() }.joinToString("  ·  "), color = st.sub, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        if (!slim) Row(Modifier.fillMaxWidth(), horizontalArrangement = androidx.compose.foundation.layout.Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-                            SeekBtn(Gl.prev, -1, st.btn, 26.dp) { Core.prev() }
+                        if (!slim) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                            if (radio) CtlBtn(recKind, 30.dp, btnCol) { toggleRec() } else CtlBtn(ButtonArt.PREV, 26.dp, btnCol, seekDir = -1) { Core.prev() }
                             Spacer(Modifier.width(6.dp))
-                            IconBtn(playId, st.btn, 36.dp, pad = 4.dp) { Core.toggle() }
+                            CtlBtn(playKind, 36.dp, btnCol) { Core.toggle() }
                             Spacer(Modifier.width(6.dp))
-                            SeekBtn(Gl.next, 1, st.btn, 26.dp) { Core.next() }
+                            CtlBtn(ButtonArt.NEXT, 26.dp, btnCol, seekDir = if (radio) 0 else 1) { if (radio) Core.nextStation() else Core.next() }
                         }
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(fmtTime(Core.position.longValue), color = st.sub, fontSize = 11.sp)
                             TimeBar(Modifier.weight(1f).padding(horizontal = 4.dp), 6.dp, 8.dp)
-                            Text(if (Core.kind.value == "radio") "LIVE" else fmtTime(Core.duration.longValue), color = st.sub, fontSize = 11.sp)
-                            if (slim) { IconBtn(playId, st.btn, 26.dp, pad = 4.dp) { Core.toggle() } }
+                            Text(if (radio) "LIVE" else fmtTime(Core.duration.longValue), color = st.sub, fontSize = 11.sp)
+                            if (slim) { if (radio) CtlBtn(recKind, 22.dp, btnCol) { toggleRec() }; CtlBtn(playKind, 24.dp, btnCol) { Core.toggle() } }
                         }
                     }
                 }
@@ -198,21 +256,25 @@ fun Pill(modifier: Modifier = Modifier, big: Boolean, onOpen: () -> Unit = {}, o
             else {
                 Row(Modifier.fillMaxSize().padding(if (slim) 5.dp else 7.dp), verticalAlignment = Alignment.CenterVertically) {
                     Disc(h - if (slim) 10.dp else 14.dp, clock)
-                    Spacer(Modifier.width(10.dp))
-                    Column(Modifier.weight(1f)) {
-                        Text(title, color = st.text, fontSize = 14.sp, fontWeight = FontWeight.Bold, maxLines = 1, modifier = Modifier.basicMarquee())
-                        if (!slim) Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(sub, color = st.sub, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
+                    Spacer(Modifier.width(8.dp))
+                    Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(title, color = st.text, fontSize = 14.sp, fontWeight = FontWeight.Bold, maxLines = 1, textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth().basicMarquee())
+                        if (!slim) Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+                            Text(sub, color = st.sub, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center, modifier = Modifier.weight(1f, fill = false))
                             SleepBadge(st.sub)
                         }
                         TimeBar(Modifier.fillMaxWidth(), 4.dp, 5.dp)
                     }
-                    IconBtn(playId, st.btn, if (slim) 26.dp else 30.dp, pad = 6.dp) { Core.toggle() }
-                    SeekBtn(Gl.next, 1, st.btn, 24.dp) { Core.next() }
+                    if (radio) CtlBtn(recKind, if (slim) 22.dp else 26.dp, btnCol) { toggleRec() }
+                    CtlBtn(playKind, if (slim) 24.dp else 28.dp, btnCol) { Core.toggle() }
+                    CtlBtn(ButtonArt.NEXT, 22.dp, btnCol, seekDir = if (radio) 0 else 1) { if (radio) Core.nextStation() else Core.next() }
                 }
             }
         }
-        if (edgeHere) EdgeLight(Modifier.fillMaxSize(), st.radius ?: (h / 2))
+        if (edgeHere) EdgeLight(Modifier.fillMaxSize(), radius)
+        if (toast.isNotBlank()) Box(Modifier.align(Alignment.TopCenter).padding(top = 2.dp).clip(RoundedCornerShape(10.dp)).background(Color(0xCC000000))
+            .padding(horizontal = 10.dp, vertical = 3.dp)) { Text(toast, color = Color.White, fontSize = 12.sp, maxLines = 1) }
     }
 }
 

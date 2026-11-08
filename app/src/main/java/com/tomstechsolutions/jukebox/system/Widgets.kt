@@ -12,6 +12,7 @@ import android.view.KeyEvent
 import android.widget.RemoteViews
 import androidx.media3.session.MediaButtonReceiver
 import com.tomstechsolutions.jukebox.R
+import com.tomstechsolutions.jukebox.ui.ButtonArt
 import com.tomstechsolutions.jukebox.ui.MainActivity
 
 /** Home-screen widgets in 3 sizes (small pill, medium, large with cover). */
@@ -50,7 +51,13 @@ object Widgets {
         val v = RemoteViews(ctx.packageName, layout)
         v.setTextViewText(R.id.w_title, title.ifBlank { "Tom's Jukebox" })
         v.setTextViewText(R.id.w_artist, artist)
-        v.setImageViewResource(R.id.w_play, if (playing) R.drawable.g_pause else R.drawable.g_play)
+        val style = com.tomstechsolutions.jukebox.Prefs.btnStyle.value
+        val col = 0xFFFFFFFF.toInt()
+        try {
+            v.setImageViewBitmap(R.id.w_play, ButtonArt.bitmap(if (playing) ButtonArt.PAUSE else ButtonArt.PLAY, style, 120, col))
+            v.setImageViewBitmap(R.id.w_prev, ButtonArt.bitmap(ButtonArt.PREV, style, 96, col))
+            v.setImageViewBitmap(R.id.w_next, ButtonArt.bitmap(ButtonArt.NEXT, style, 96, col))
+        } catch (_: Exception) { v.setImageViewResource(R.id.w_play, if (playing) R.drawable.g_pause else R.drawable.g_play) }
         v.setOnClickPendingIntent(R.id.w_play, button(ctx, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE))
         v.setOnClickPendingIntent(R.id.w_next, button(ctx, KeyEvent.KEYCODE_MEDIA_NEXT))
         v.setOnClickPendingIntent(R.id.w_prev, button(ctx, KeyEvent.KEYCODE_MEDIA_PREVIOUS))

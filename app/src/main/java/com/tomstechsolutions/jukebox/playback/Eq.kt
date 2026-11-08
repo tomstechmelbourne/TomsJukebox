@@ -34,6 +34,18 @@ object EqPresets {
         EqPreset("headphones", "Headphones", "Tai Nghe", g(4, 3, 1, 0, -1, 0, 1, 2, 3, 2)),
         EqPreset("laptop", "Small Speakers", "Loa Laptop", g(-4, -2, 2, 4, 3, 2, 2, 3, 2, 1)),
         EqPreset("night", "Late Night", "Đêm Khuya", g(-3, -2, -1, 0, 1, 2, 2, 1, -1, -3)),
+        EqPreset("bass_light", "Light Bass", "Bass Nhẹ", g(3, 3, 2, 1, 0, 0, 0, 0, 0, 0)),
+        EqPreset("bass_super", "Super Bass", "Siêu Bass", g(10, 9, 7, 4, 1, 0, 0, 0, 0, 0)),
+        EqPreset("bass_cut", "Less Bass", "Giảm Bass", g(-6, -5, -4, -2, 0, 0, 0, 0, 0, 0)),
+        EqPreset("treble_light", "Light Treble", "Treble Nhẹ", g(0, 0, 0, 0, 0, 0, 1, 2, 3, 3)),
+        EqPreset("treble_super", "Super Treble", "Siêu Treble", g(0, 0, 0, 0, 0, 1, 3, 6, 8, 9)),
+        EqPreset("treble_cut", "Less Treble", "Giảm Treble", g(0, 0, 0, 0, 0, 0, -1, -3, -5, -6)),
+        EqPreset("vshape", "Bass + Treble", "Bass + Treble", g(7, 6, 3, 0, -2, -2, 0, 3, 6, 7)),
+        EqPreset("loud", "Louder", "Tăng Âm Lượng", g(1, 1, 0, 0, 0, 0, 0, 0, 1, 1)),
+        EqPreset("voice", "Clear Voice", "Rõ Giọng Nói", g(-4, -3, -1, 1, 4, 5, 5, 3, 0, -2)),
+        EqPreset("car", "In The Car", "Trong Xe Hơi", g(5, 4, 2, 0, -1, 0, 2, 3, 3, 2)),
+        EqPreset("bt_speaker", "Bluetooth Speaker", "Loa Bluetooth", g(5, 4, 3, 2, 0, 0, 1, 2, 2, 1)),
+        EqPreset("hall", "Concert Hall", "Hội Trường", g(3, 2, 1, 0, 1, 2, 3, 3, 4, 4)),
     )
 
     fun custom(): List<EqPreset> = try {
@@ -116,7 +128,8 @@ class EqEngine {
             loud?.let { l ->
                 val peak = gains.maxOrNull() ?: 0f
                 l.setTargetGain(0); l.enabled = false
-                if (on && peak < 0) { l.setTargetGain((-peak * 60).toInt()); l.enabled = true }
+                if (on && Prefs.eqPreset.value == "loud") { l.setTargetGain(800); l.enabled = true }
+                else if (on && peak < 0) { l.setTargetGain((-peak * 60).toInt()); l.enabled = true }
             }
         } catch (_: Exception) { }
     }

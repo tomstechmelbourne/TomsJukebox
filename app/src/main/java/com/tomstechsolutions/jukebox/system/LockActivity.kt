@@ -77,7 +77,7 @@ class LockActivity : ComponentActivity() {
                     Pill(Modifier.padding(horizontal = 4.dp), big = true)
                     Text(t("Swipe up to unlock", "Vuốt lên để mở khoá"), color = Color(0xFF999999), fontSize = 13.sp, modifier = Modifier.padding(top = 14.dp, bottom = 8.dp))
                 }
-                EdgeLight(Modifier.fillMaxSize(), 34.dp)
+                EdgeLight(Modifier.fillMaxSize(), com.tomstechsolutions.jukebox.ui.screenCorner())
             }
         }
     }

@@ -105,6 +105,10 @@ object EdgeEffects {
         "Chasing Streaks" to "Vệt Sáng Đuổi Nhau", "Shooting Star" to "Sao Băng", "Spinning Rainbow" to "Cầu Vồng Xoay",
         "Breathing" to "Nhịp Thở", "Music Beat" to "Nhịp Nhạc", "Colour Wave" to "Sóng Màu", "Two Ends Meet" to "Hai Đầu Gặp Nhau",
         "Neon" to "Neon", "Sparkle" to "Lấp Lánh", "Running Dashes" to "Gạch Đứt Chạy", "Fire" to "Lửa", "Frost" to "Băng Giá",
+        "Aurora" to "Cực Quang", "Water Ripples" to "Gợn Sóng Nước", "Stardust" to "Bụi Sao", "Sliding Sunset" to "Hoàng Hôn Trượt",
+        "Heartbeat" to "Tim Đập", "Bass Runner" to "Chạy Theo Bass", "Edge Bars" to "Cột Sóng Viền", "Fireworks" to "Pháo Hoa",
+        "Opposite Streaks" to "Vệt Ngược Chiều", "Four Corners" to "Bốn Góc Đuổi Nhau", "Falling Stars" to "Mưa Sao Rơi", "Lightning" to "Tia Chớp",
+        "Electric" to "Điện Từ", "Diamond Glints" to "Ánh Kim Cương", "Christmas Lights" to "Đèn Giáng Sinh", "Tết Lanterns" to "Đèn Tết",
     )
     fun name(i: Int) = names.getOrNull(i)?.let { t(it.first, it.second) } ?: ""
     val speeds = listOf(0.3f, 0.6f, 1f, 1.7f, 2.8f)
@@ -116,6 +120,12 @@ object VizStyles {
         "Glowing Waves" to "Sóng Phát Sáng", "Bars" to "Cột Sóng", "Mirror Bars" to "Cột Đối Xứng", "Dots" to "Chấm Nhảy",
         "Line" to "Đường Sóng", "Circle" to "Vòng Tròn", "Spectrum" to "Phổ Màu", "Flames" to "Ngọn Lửa",
         "Particles" to "Hạt Bay", "Rings" to "Vòng Lan Toả", "Oscilloscope" to "Dao Động Ký", "Starfield" to "Bầu Trời Sao",
+        "Ocean Waves" to "Sóng Đại Dương", "Dancing Rainbow" to "Cầu Vồng Nhảy Múa", "Amp LEDs" to "Đèn LED Ampli", "VU Needles" to "Kim Đồng Hồ VU",
+        "Glowing Circle" to "Vòng Tròn Phát Sáng", "Blooming Flower" to "Hoa Nở", "Spectrum Waterfall" to "Thác Nước Phổ", "Silk Ribbon" to "Dải Lụa",
+        "Music Fireworks" to "Pháo Hoa Nhạc", "Mountains" to "Núi Non", "Light Rain" to "Mưa Ánh Sáng", "Mirror" to "Gương Đối Xứng",
+        "Beating Heart" to "Tim Đập Nhịp", "Whirlwind" to "Lốc Xoáy", "Bubbles" to "Bong Bóng", "Neon Grid 3D" to "Lưới Neon 3D",
+        "Fireflies" to "Đom Đóm", "Sound Fingerprint" to "Vân Tay Âm Thanh", "Sunburst" to "Mặt Trời Toả Tia", "Butterfly" to "Cánh Bướm",
+        "Night City" to "Thành Phố Đêm", "Heart Monitor" to "Điện Tâm Đồ", "Ripples" to "Sóng Tròn Đồng Tâm", "Nebula" to "Tinh Vân",
     )
     fun name(i: Int) = names.getOrNull(i)?.let { t(it.first, it.second) } ?: ""
 }

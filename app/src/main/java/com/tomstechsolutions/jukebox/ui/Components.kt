@@ -155,12 +155,13 @@ fun Cover(uri: String, albumId: Long, size: Dp, th: JTheme, radius: Dp = 10.dp) 
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Row2(title: String, sub: String, th: JTheme, selected: Boolean = false, leading: @Composable () -> Unit = {},
-         trailing: @Composable () -> Unit = {}, onClick: () -> Unit) {
+         trailing: @Composable () -> Unit = {}, onLong: (() -> Unit)? = null, onClick: () -> Unit) {
     Row(
         Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(if (selected) th.accent.copy(alpha = 0.18f) else Color.Transparent)
-            .clickable(onClick = onClick).padding(horizontal = 8.dp, vertical = 7.dp),
+            .combinedClickable(onClick = onClick, onLongClick = onLong).padding(horizontal = 8.dp, vertical = 7.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         leading()

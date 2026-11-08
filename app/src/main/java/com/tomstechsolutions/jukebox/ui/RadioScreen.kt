@@ -2,7 +2,12 @@ package com.tomstechsolutions.jukebox.ui
 
 import android.Manifest
 import android.content.pm.PackageManager
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -60,8 +65,24 @@ fun RadioScreen(act: MainActivity, th: JTheme) {
         }
     }
 
+    if (act.openRecordings.value) { RecordingsScreen(act, th) { act.openRecordings.value = false }; return }
     Column(Modifier.fillMaxSize().padding(horizontal = 14.dp)) {
         Text("Radio", color = th.text, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+        // SBS Tiếng Việt card
+        Card(th) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                G(Gl.radio, th.accent, 30.dp)
+                androidx.compose.foundation.layout.Spacer(Modifier.padding(start = 10.dp))
+                Column(Modifier.weight(1f)) {
+                    Text("SBS Tiếng Việt", color = th.text, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                    Text(t("Daily programme (about 2 hours) on SBS Radio 1", "Chương trình mỗi ngày (khoảng 2 tiếng) trên SBS Radio 1"), color = th.muted, fontSize = 12.sp)
+                }
+            }
+            Row(Modifier.padding(top = 8.dp)) {
+                Btn(t("Listen Live", "Nghe Trực Tiếp"), th, Gl.play, primary = true) { Core.radioList = Stations.all; Core.playStation(Stations.sbsViet) }
+                Btn(t("Catch Up", "Nghe Lại"), th, Gl.podcast) { PodcastNav.openQuery.value = "SBS Vietnamese"; act.tab.intValue = 2 }
+            }
+        }
         SearchBox(query, t("Search any station worldwide", "Tìm đài bất kỳ trên thế giới"), th) { query = it }
         if (query.length >= 3) Btn(t("Search", "Tìm") + " \"$query\"", th, Gl.search, primary = true) {
             busy = true; filter = "ONLINE"
@@ -72,6 +93,7 @@ fun RadioScreen(act: MainActivity, th: JTheme) {
             listOf("VN" to t("Vietnam", "Việt Nam"), "VIET" to t("Vietnamese Overseas", "Tiếng Việt Hải Ngoại"), "GENRE" to t("Genres", "Thể Loại"))
         Row(Modifier.horizontalScroll(rememberScrollState())) { chips.forEach { (k, s) -> Chip(s, filter == k, th) { filter = k; online = emptyList() } } }
         Row(Modifier.horizontalScroll(rememberScrollState()), verticalAlignment = Alignment.CenterVertically) {
+            Chip("● " + t("Recordings", "Bản Thâu Âm"), false, th) { act.openRecordings.value = true }
             Chip("≥128 kbps", Prefs.radioHq.value, th) { Prefs.radioHq.value = !Prefs.radioHq.value }
             Chip(t("Follow My Location", "Theo Vị Trí"), Prefs.radioAutoState.value, th) {
                 Prefs.radioAutoState.value = !Prefs.radioAutoState.value
@@ -109,11 +131,15 @@ fun RadioScreen(act: MainActivity, th: JTheme) {
                 Row2(s.name, sub, th, selected = playing,
                     leading = { G(Gl.radio, if (s.paused) th.muted else th.accent, 36.dp) },
                     trailing = {
-                        if (playing) IconBtn(Gl.record, if (Core.recording.value) Color(0xFFFF5252) else th.muted, 20.dp, active = Core.recording.value) {
-                            if (Core.recording.value) Core.stopRecording() else Core.startRecording()
+                        if (playing) Box(Modifier.padding(end = 6.dp).clip(RoundedCornerShape(18.dp))
+                            .background(if (Core.recording.value) Color(0xFFE53935) else Color(0x33FF5252))
+                            .clickable { if (Core.recording.value) Core.stopRecording() else Core.startRecording() }
+                            .padding(horizontal = 14.dp, vertical = 10.dp)) {
+                            Text(if (Core.recording.value) "■ " + t("Stop", "Dừng") else "● " + t("Record", "Thâu"), color = if (Core.recording.value) Color.White else Color(0xFFFF6B6B),
+                                fontSize = 15.sp, fontWeight = FontWeight.Bold)
                         }
-                        IconBtn(if (playing && Core.playing.value) Gl.pause else Gl.play, th.text, 22.dp) { if (playing) Core.toggle() else Core.playStation(s) }
-                    }) { if (playing) act.openNow.value = true else Core.playStation(s) }
+                        IconBtn(if (playing && Core.playing.value) Gl.pause else Gl.play, th.text, 24.dp) { if (playing) Core.toggle() else { Core.radioList = list; Core.playStation(s) } }
+                    }) { if (playing) act.openNow.value = true else { Core.radioList = list; Core.playStation(s) } }
             }
         }
     }
