@@ -4,7 +4,18 @@ set -x
 API=$1
 APK=$(ls app/build/outputs/apk/release/*.apk | head -1)
 mkdir -p shots
-adb install -r -g "$APK" || adb install -r "$APK"
+# wait until Android has really settled (new system images restart system_server once after boot)
+adb wait-for-device
+for i in $(seq 1 60); do [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1" ] && break; sleep 5; done
+sleep 45
+ok=0
+for i in 1 2 3; do
+  adb wait-for-device
+  until adb shell pm path android >/dev/null 2>&1; do sleep 5; done
+  if adb install -r -g "$APK" 2>&1 | grep -q Success; then ok=1; break; fi
+  echo "install try $i failed, waiting"; sleep 40
+done
+[ $ok = 1 ] || { echo "INSTALL FAILED (emulator)"; exit 1; }
 adb shell pm grant com.tomstechsolutions.jukebox android.permission.POST_NOTIFICATIONS 2>/dev/null
 adb logcat -c
 adb shell am start -W -n com.tomstechsolutions.jukebox/.ui.MainActivity
