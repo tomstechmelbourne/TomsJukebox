@@ -88,6 +88,8 @@ fun NowPlayingScreen(act: MainActivity, th: JTheme, embedded: Boolean, onClose: 
     var view by remember { mutableIntStateOf(0) }  // 0 cover, 1 lyrics, 2 queue
     if (act.showLyrics.value) { view = 1; act.showLyrics.value = false }
     val bg = Brush.verticalGradient(listOf(Color(pal[0]).copy(alpha = 0.55f).compositeOverDark(), Color(0xFF15100F), Color(0xFF0A0A0B)))
+    androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxSize()) {
+    val short = maxHeight < 560.dp
     Box(Modifier.fillMaxSize().background(if (embedded) Brush.verticalGradient(listOf(Color.Transparent, Color.Transparent)) else bg)
         .then(if (embedded) Modifier else Modifier.windowInsetsPadding(WindowInsets.safeDrawing)).clickable(enabled = false) {}) {
         Column(Modifier.fillMaxSize().padding(horizontal = 14.dp)) {
@@ -107,13 +109,13 @@ fun NowPlayingScreen(act: MainActivity, th: JTheme, embedded: Boolean, onClose: 
                 Column(Modifier.weight(1f)) {
                     Text(Core.title.value.ifBlank { "Tom's Jukebox" }, color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     Text(listOf(Core.artist.value, Core.album.value).filter { it.isNotBlank() }.joinToString("  ·  "), color = Color(0xFFE8DCD0), fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    if (Core.format.value.isNotBlank()) Text(Core.format.value, color = Color(0xFFB8A99C), fontSize = 12.sp)
+                    if (Core.format.value.isNotBlank() && !short) Text(Core.format.value, color = Color(0xFFB8A99C), fontSize = 12.sp)
                 }
                 val fav = Core.uri.value.isNotBlank() && Core.uri.value in Prefs.favSet()
                 IconBtn(if (fav) Gl.starFull else Gl.star, if (fav) ORANGE else Color.White) { if (Core.uri.value.isNotBlank()) Prefs.toggleFav(Core.uri.value) }
             }
             if (Core.error.value.isNotBlank()) Text(Core.error.value, color = Color(0xFFFFB4A9), fontSize = 12.sp)
-            Visualizer(Modifier.fillMaxWidth().height(46.dp).padding(vertical = 4.dp))
+            if (!short) Visualizer(Modifier.fillMaxWidth().height(46.dp).padding(vertical = 4.dp))
             if (Prefs.skin.value == "ipod") IpodWheel()
             else Pill(Modifier.padding(vertical = 6.dp), big = true, onLong = { act.showSleep.value = true })
             // extra buttons row
@@ -131,6 +133,7 @@ fun NowPlayingScreen(act: MainActivity, th: JTheme, embedded: Boolean, onClose: 
                 else IconBtn(Gl.cast, Color.White, 22.dp) { openOutputSwitcher(ctx) }
             }
         }
+    }
     }
 }
 

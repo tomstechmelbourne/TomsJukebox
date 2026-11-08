@@ -23,6 +23,6 @@ adb exec-out screencap -p > shots/api${API}_landscape.png
 adb shell settings put system user_rotation 0; sleep 2
 PID=$(adb shell pidof com.tomstechsolutions.jukebox)
 adb logcat -d > shots/api${API}_logcat.txt
-grep -E "FATAL EXCEPTION|AndroidRuntime" -A 30 shots/api${API}_logcat.txt > shots/api${API}_crash.txt || true
+grep -A 30 "FATAL EXCEPTION" shots/api${API}_logcat.txt | grep -B2 -A 28 "Process: com.tomstechsolutions.jukebox" > shots/api${API}_crash.txt || true
 if [ -z "$PID" ] || [ -s shots/api${API}_crash.txt ]; then echo "APP CRASHED on API $API"; cat shots/api${API}_crash.txt; exit 1; fi
 echo "API $API OK (pid $PID)"

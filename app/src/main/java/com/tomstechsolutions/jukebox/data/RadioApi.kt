@@ -35,7 +35,7 @@ object RadioApi {
         try {
             val cc = when (s.country) { "AU" -> "&countrycode=AU"; "VN" -> "&countrycode=VN"; else -> "" }
             var arr = query("/json/stations/search?name=${Net.enc(s.search)}$cc&hidebroken=true&order=clickcount&reverse=true&limit=15")
-            if (arr.length() == 0 && cc.isNotEmpty()) arr = query("/json/stations/search?name=${Net.enc(s.search)}&hidebroken=true&order=clickcount&reverse=true&limit=15")
+            if (arr.length() == 0 && cc.isNotEmpty() && s.country == "OS") arr = query("/json/stations/search?name=${Net.enc(s.search)}&hidebroken=true&order=clickcount&reverse=true&limit=15")
             val found = toStations(arr, s.country, s.group).filter { !it.paused }
             val pick = (if (Prefs.radioHq.value) found.filter { it.bitrate >= 128 }.ifEmpty { found } else found)
                 .maxByOrNull { it.bitrate.coerceAtMost(320) / 64 * 1000 - found.indexOf(it) }

@@ -146,7 +146,7 @@ fun Header(act: MainActivity, th: JTheme) {
                 withStyle(SpanStyle(color = SKY)) { append("TOM'S ") }
                 withStyle(SpanStyle(color = ORANGE)) { append("JUKEBOX") }
             }, fontSize = 19.sp, fontWeight = FontWeight.Black)
-            if (Prefs.textScale.value < 1.2f) Text("Focus On One Thing And Do It Well", color = th.muted, fontSize = 10.sp, maxLines = 1)
+            if (Prefs.textScale.value < 1.2f) Text("Focus On One Thing And Do It Well", color = th.muted, fontSize = 9.sp, maxLines = 1, softWrap = false)
         }
         val unread = Messages.unread()
         Box {

@@ -18,7 +18,7 @@ for name, search, country, group, genre in rows:
     r = q(f"/json/stations/search?name={urllib.parse.quote(search)}{cc}&hidebroken=true&order=clickcount&reverse=true&limit=5")
     if r is None:
         out.append(f"?  {name}  (server not reachable)"); continue
-    if not r and cc:
+    if not r and cc and country == 'OS':
         r = q(f"/json/stations/search?name={urllib.parse.quote(search)}&hidebroken=true&order=clickcount&reverse=true&limit=5") or []
     if r:
         ok += 1; top = r[0]

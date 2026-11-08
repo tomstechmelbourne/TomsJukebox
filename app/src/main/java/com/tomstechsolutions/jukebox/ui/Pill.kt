@@ -169,7 +169,7 @@ fun Pill(modifier: Modifier = Modifier, big: Boolean, onOpen: () -> Unit = {}, o
             val sub = listOf(Core.artist.value, Core.album.value).filter { it.isNotBlank() }.joinToString(" · ")
             val playId = if (Core.playing.value) Gl.pause else Gl.play
             if (big) {
-                Row(Modifier.fillMaxSize().padding(if (slim) 8.dp else 11.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.fillMaxSize().padding(start = if (slim) 8.dp else 11.dp, top = if (slim) 8.dp else 11.dp, bottom = if (slim) 8.dp else 11.dp, end = if (st.radius == null) h / 5 else 14.dp), verticalAlignment = Alignment.CenterVertically) {
                     Disc(h - if (slim) 16.dp else 22.dp, clock)
                     Spacer(Modifier.width(12.dp))
                     Column(Modifier.weight(1f)) {
