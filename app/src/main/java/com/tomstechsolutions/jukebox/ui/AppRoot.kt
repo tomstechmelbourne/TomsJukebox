@@ -97,8 +97,8 @@ private fun AppBody(act: MainActivity, th: JTheme) {
         if (wide) {
             // landscape / DeX / unfolded: Now Playing on the left, lists on the right
             Row(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
-                Box(Modifier.weight(0.42f).fillMaxHeight()) { NowPlayingScreen(act, th, embedded = true, onClose = {}, onDriving = { driving = true }) }
-                Column(Modifier.weight(0.58f).fillMaxHeight()) {
+                Box(Modifier.weight(0.5f).fillMaxHeight()) { NowPlayingScreen(act, th, embedded = true, onClose = {}, onDriving = { driving = true }) }
+                Column(Modifier.weight(0.5f).fillMaxHeight()) {
                     Header(act, th)
                     Box(Modifier.weight(1f)) { Tabs(act, th) }
                     BottomNav(act, th)

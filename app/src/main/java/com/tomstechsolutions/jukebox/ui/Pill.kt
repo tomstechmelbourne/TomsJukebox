@@ -168,10 +168,11 @@ fun Pill(modifier: Modifier = Modifier, big: Boolean, onOpen: () -> Unit = {}, o
             val title = Core.title.value.ifBlank { "Tom's Jukebox" }
             val sub = listOf(Core.artist.value, Core.album.value).filter { it.isNotBlank() }.joinToString(" · ")
             val playId = if (Core.playing.value) Gl.pause else Gl.play
-            if (big) {
+            if (big) androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxSize()) {
+                val discSize = minOf(h - if (slim) 16.dp else 22.dp, maxWidth * 0.3f)
                 Row(Modifier.fillMaxSize().padding(start = if (slim) 8.dp else 11.dp, top = if (slim) 8.dp else 11.dp, bottom = if (slim) 8.dp else 11.dp, end = if (st.radius == null) h / 5 else 14.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Disc(h - if (slim) 16.dp else 22.dp, clock)
-                    Spacer(Modifier.width(12.dp))
+                    Disc(discSize, clock)
+                    Spacer(Modifier.width(10.dp))
                     Column(Modifier.weight(1f)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(title, color = st.text, fontSize = 17.sp, fontWeight = FontWeight.Bold, maxLines = 1, modifier = Modifier.weight(1f).basicMarquee())
@@ -180,9 +181,9 @@ fun Pill(modifier: Modifier = Modifier, big: Boolean, onOpen: () -> Unit = {}, o
                         Text(listOf(sub, Core.format.value).filter { it.isNotBlank() }.joinToString("  ·  "), color = st.sub, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         if (!slim) Row(Modifier.fillMaxWidth(), horizontalArrangement = androidx.compose.foundation.layout.Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
                             SeekBtn(Gl.prev, -1, st.btn, 26.dp) { Core.prev() }
-                            Spacer(Modifier.width(12.dp))
+                            Spacer(Modifier.width(6.dp))
                             IconBtn(playId, st.btn, 36.dp, pad = 4.dp) { Core.toggle() }
-                            Spacer(Modifier.width(12.dp))
+                            Spacer(Modifier.width(6.dp))
                             SeekBtn(Gl.next, 1, st.btn, 26.dp) { Core.next() }
                         }
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -193,7 +194,8 @@ fun Pill(modifier: Modifier = Modifier, big: Boolean, onOpen: () -> Unit = {}, o
                         }
                     }
                 }
-            } else {
+            }
+            else {
                 Row(Modifier.fillMaxSize().padding(if (slim) 5.dp else 7.dp), verticalAlignment = Alignment.CenterVertically) {
                     Disc(h - if (slim) 10.dp else 14.dp, clock)
                     Spacer(Modifier.width(10.dp))

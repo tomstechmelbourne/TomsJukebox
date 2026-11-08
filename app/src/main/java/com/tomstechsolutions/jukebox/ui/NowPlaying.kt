@@ -90,6 +90,7 @@ fun NowPlayingScreen(act: MainActivity, th: JTheme, embedded: Boolean, onClose: 
     val bg = Brush.verticalGradient(listOf(Color(pal[0]).copy(alpha = 0.55f).compositeOverDark(), Color(0xFF15100F), Color(0xFF0A0A0B)))
     androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxSize()) {
     val short = maxHeight < 560.dp
+    val tiny = maxHeight < 430.dp
     Box(Modifier.fillMaxSize().background(if (embedded) Brush.verticalGradient(listOf(Color.Transparent, Color.Transparent)) else bg)
         .then(if (embedded) Modifier else Modifier.windowInsetsPadding(WindowInsets.safeDrawing)).clickable(enabled = false) {}) {
         Column(Modifier.fillMaxSize().padding(horizontal = 14.dp)) {
@@ -98,7 +99,8 @@ fun NowPlayingScreen(act: MainActivity, th: JTheme, embedded: Boolean, onClose: 
                 Text(t("Now Playing", "Đang Phát"), color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, modifier = Modifier.weight(1f))
                 IconBtn(Gl.car, Color.White) { onDriving() }
             }
-            Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+            if (tiny && view == 0) Spacer(Modifier.weight(1f))
+            else Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 when (view) {
                     1 -> LyricsView(Modifier.fillMaxSize())
                     2 -> QueueView(th, Modifier.fillMaxSize())
