@@ -1,0 +1,18 @@
+name: Explore
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  explore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          mkdir out
+          python3 tools/explore.py > out/stations.txt 2>&1 || true
+          SDKM=$(ls $ANDROID_HOME/cmdline-tools/*/bin/sdkmanager | sort | tail -1)
+          yes | $SDKM --licenses > /dev/null || true
+          ($SDKM --version; $SDKM --list --channel=0 2>/dev/null | grep -iE "platforms;|system-images;android-3[5-9]" ; echo "--- channel 3 (canary)"; $SDKM --list --channel=3 2>/dev/null | grep -iE "platforms;android-3[6-9]|system-images;android-3[6-9]") > out/sdk.txt 2>&1
+          ls $ANDROID_HOME/platforms >> out/sdk.txt
+          cd out && git init -q && git checkout -q -b explore && git add -A && git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -qm explore
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" explore
