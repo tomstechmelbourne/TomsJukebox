@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -131,7 +132,7 @@ fun MoreScreen(act: MainActivity, th: JTheme) {
                     horizontalAlignment = Alignment.CenterHorizontally) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         for (k in listOf(ButtonArt.PREV, ButtonArt.PLAY, ButtonArt.NEXT)) androidx.compose.foundation.Canvas(Modifier.size(if (k == ButtonArt.PLAY) 30.dp else 22.dp)) {
-                            androidx.compose.ui.graphics.drawscope.drawIntoCanvas { c -> ButtonArt.draw(c.nativeCanvas, k, i, size.width, (if (th.light) Color(0xFF1B2733) else Color.White).toArgb()) }
+                            drawIntoCanvas { c -> ButtonArt.draw(c.nativeCanvas, k, i, size.width, (if (th.light) Color(0xFF1B2733) else Color.White).toArgb()) }
                         }
                     }
                     Text(ButtonArt.name(i), color = th.text, fontSize = 11.sp, maxLines = 1)
