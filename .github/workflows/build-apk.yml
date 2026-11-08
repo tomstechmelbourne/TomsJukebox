@@ -77,6 +77,10 @@ jobs:
         run: |
           git fetch origin apk --depth 1 && git checkout origin/apk -- TomsJukebox-0.9.1-beta.apk
           mkdir -p app/build/outputs/apk/release && mv TomsJukebox-0.9.1-beta.apk app/build/outputs/apk/release/
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android/sdk/ndk /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL /usr/share/swift || true
+          df -h /
       - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -88,6 +92,10 @@ jobs:
           arch: x86_64
           target: ${{ (matrix.api == '33' || matrix.api == '35' || matrix.api == '37.0') && 'google_apis' || 'default' }}
           disable-animations: true
+          disk-size: 6000M
+          ram-size: 4096M
+          cores: 4
+          emulator-boot-timeout: 1200
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           script: bash tools/smoke.sh ${{ matrix.api }}
       - name: Save screenshots

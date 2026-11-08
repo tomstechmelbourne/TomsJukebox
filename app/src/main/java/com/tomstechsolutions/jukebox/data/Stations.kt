@@ -3,7 +3,7 @@ package com.tomstechsolutions.jukebox.data
 import com.tomstechsolutions.jukebox.t
 
 /**
- * Built-in stations (110). Each one is looked up live on Radio Browser (radio-browser.info) by name when played,
+ * Built-in stations (109). Each one is looked up live on Radio Browser (radio-browser.info) by name when played,
  * so a station that changes its stream address keeps working; one that can't be found is shown as "Tạm Ngưng".
  */
 object Stations {
@@ -80,7 +80,6 @@ object Stations {
         Station("ABC Canberra 666", "ABC Radio Canberra", "AU", "ACT", "talk"),
         Station("2CC 1206", "2CC", "AU", "ACT", "talk"),
         Station("Mix 106.3", "Mix 106.3", "AU", "ACT", "hits"),
-        Station("Hit 104.7", "Hit 104.7", "AU", "ACT", "hits"),
         Station("ArtSound FM 92.7", "ArtSound", "AU", "ACT", "community"),
         Station("2XX 98.3", "2XX", "AU", "ACT", "community"),
         Station("VOV1 – Thời Sự", "VOV1", "VN", "VOV", "news"),
