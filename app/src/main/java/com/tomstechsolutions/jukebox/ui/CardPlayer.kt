@@ -205,8 +205,8 @@ fun CardPlayer(modifier: Modifier = Modifier, compact: Boolean, onOpen: () -> Un
 @Composable
 fun LockCard(modifier: Modifier = Modifier) {
     val ctx = LocalContext.current
-    Column(modifier.fillMaxWidth().clip(RoundedCornerShape(30.dp)).background(Color(0x55000000)).padding(10.dp)) {
-        Box(Modifier.fillMaxWidth().aspectRatio(1.25f).clip(RoundedCornerShape(24.dp))) {
+    Column(modifier.fillMaxWidth().clip(RoundedCornerShape(30.dp)).background(Color(0x33000000)).padding(10.dp)) {
+        Box(Modifier.fillMaxWidth().aspectRatio(1.4f).clip(RoundedCornerShape(24.dp))) {
             val art = Core.art.value
             if (art != null) Image(art.asImageBitmap(), null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
             else Box(Modifier.fillMaxSize().background(Brush.linearGradient(Core.palette.value.map { Color(it) })), contentAlignment = Alignment.Center) {

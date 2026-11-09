@@ -87,8 +87,13 @@ class LockActivity : ComponentActivity() {
                         contentScale = ContentScale.Crop, alpha = 0.35f)
                 }
                 Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Spacer(Modifier.height(60.dp))
-                    Text(SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(now)), color = Color.White, fontSize = 88.sp, fontWeight = FontWeight.Light)
+                    Spacer(Modifier.height(if (Prefs.lockStyle.value == "card") 18.dp else 60.dp))
+                    if (Prefs.lockStyle.value == "card" && LocalConfiguration.current.orientation != Configuration.ORIENTATION_LANDSCAPE) {
+                        // giống ảnh Tom gửi: ổ khoá nhỏ, giờ và phút xếp chồng, ngày tháng bên dưới
+                        Text("🔒", fontSize = 16.sp)
+                        Text(SimpleDateFormat("HH", Locale.getDefault()).format(Date(now)), color = Color.White, fontSize = 84.sp, fontWeight = FontWeight.Light, lineHeight = 80.sp)
+                        Text(SimpleDateFormat("mm", Locale.getDefault()).format(Date(now)), color = Color.White, fontSize = 84.sp, fontWeight = FontWeight.Light, lineHeight = 80.sp)
+                    } else Text(SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(now)), color = Color.White, fontSize = 88.sp, fontWeight = FontWeight.Light)
                     Text(SimpleDateFormat(t("EEEE, d MMMM", "EEEE, 'ngày' d 'tháng' M"), if (t("en", "vi") == "vi") Locale("vi") else Locale.ENGLISH).format(Date(now)),
                         color = Color(0xFFDDDDDD), fontSize = 18.sp)
                     Spacer(Modifier.weight(1f))
@@ -125,8 +130,8 @@ private fun LockPill() {
         val size = Prefs.lockSize.value
         val card = Prefs.lockStyle.value == "card"
         val pillW = minOf(maxWidth - 24.dp, 460.dp)
-        val pillH = if (card) (pillW - 20.dp) / 1.25f + 200.dp else when (size) { "small" -> 66.dp; "large" -> 150.dp; else -> 106.dp }
-        val top = if (land) 16.dp else if (Prefs.lockStyle.value == "card") 200.dp else 230.dp     // dưới đồng hồ
+        val pillH = if (card) (pillW - 20.dp) / 1.4f + 196.dp else when (size) { "small" -> 66.dp; "large" -> 150.dp; else -> 106.dp }
+        val top = if (land) 16.dp else if (Prefs.lockStyle.value == "card") 262.dp else 230.dp     // dưới đồng hồ
         val bottomGap = if (land) 40.dp else 130.dp              // vân tay + chữ "Vuốt lên"
         with(dens) {
             val minY = top.toPx(); val maxY = (maxHeight - bottomGap - pillH).toPx().coerceAtLeast(minY)
