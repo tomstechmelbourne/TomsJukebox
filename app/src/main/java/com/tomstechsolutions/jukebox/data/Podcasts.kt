@@ -8,7 +8,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.xmlpull.v1.XmlPullParser
 
-data class ChannelInfo(val description: String, val link: String, val language: String, val count: Int)
+data class ChannelInfo(val description: String, val link: String, val language: String, val count: Int, val newest: Long = 0L)
 
 object Podcasts {
     val info = java.util.concurrent.ConcurrentHashMap<String, ChannelInfo>()
@@ -51,18 +51,19 @@ object Podcasts {
         val parser = Xml.newPullParser()
         parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false)
         parser.setInput(xml.reader())
-        val out = ArrayList<Episode>()
+        val out = ArrayList<Pair<Long, Episode>>()
         var inItem = false
+        var stamp = 0L
         var title = ""; var url = ""; var date = ""; var dur = 0L; var desc = ""; var img = ""
         var cDesc = ""; var cLink = ""; var cLang = ""
         var ev = parser.eventType
-        while (ev != XmlPullParser.END_DOCUMENT && out.size < 300) {
+        while (ev != XmlPullParser.END_DOCUMENT && out.size < 5000) {
             when (ev) {
                 XmlPullParser.START_TAG -> when (parser.name) {
-                    "item" -> { inItem = true; title = ""; url = ""; date = ""; dur = 0; desc = ""; img = "" }
+                    "item" -> { inItem = true; title = ""; url = ""; date = ""; dur = 0; desc = ""; img = ""; stamp = 0L }
                     "title" -> if (inItem) title = parser.nextText().trim()
                     "enclosure" -> if (inItem) url = parser.getAttributeValue(null, "url") ?: ""
-                    "pubDate" -> if (inItem) date = parser.nextText().trim().take(16)
+                    "pubDate" -> if (inItem) { val raw = parser.nextText().trim(); stamp = parseDate(raw); date = if (stamp > 0) showDate(stamp) else raw.take(16) }
                     "itunes:duration" -> if (inItem) dur = parseDur(parser.nextText())
                     "description" -> if (inItem) desc = parser.nextText().replace(Regex("<[^>]+>"), "").trim().take(400)
                                      else if (cDesc.isBlank()) cDesc = parser.nextText().replace(Regex("<[^>]+>"), "").trim().take(1500)
@@ -72,14 +73,28 @@ object Podcasts {
                 }
                 XmlPullParser.END_TAG -> if (parser.name == "item") {
                     inItem = false
-                    if (url.isNotBlank()) out += Episode(title, url, date, dur, p.title, img.ifBlank { p.image }, desc)
+                    if (url.isNotBlank()) out += stamp to Episode(title, url, date, dur, p.title, img.ifBlank { p.image }, desc)
                 }
             }
             ev = parser.next()
         }
-        info[p.feed] = ChannelInfo(cDesc, cLink, cLang, out.size)
-        out
+        info[p.feed] = ChannelInfo(cDesc, cLink, cLang, out.size, out.maxOfOrNull { it.first } ?: 0L)
+        // Feeds don't all list the newest episode first: sort by date, newest first, then keep 300.
+        out.sortedByDescending { it.first }.take(300).map { it.second }
     }
+
+    private val dateFormats = listOf("EEE, dd MMM yyyy HH:mm:ss Z", "EEE, d MMM yyyy HH:mm:ss Z", "EEE, dd MMM yyyy HH:mm:ss zzz", "EEE, dd MMM yyyy HH:mm Z",
+        "dd MMM yyyy HH:mm:ss Z", "EEE, dd MMM yyyy", "yyyy-MM-dd'T'HH:mm:ssXXX", "yyyy-MM-dd")
+    /** RSS dates (RFC 822, sometimes sloppy) → milliseconds; 0 if unreadable. */
+    fun parseDate(s: String): Long {
+        val t = s.replace(Regex("\\s+"), " ").trim()
+        for (f in dateFormats) try {
+            val d = java.text.SimpleDateFormat(f, java.util.Locale.ENGLISH).apply { isLenient = true }.parse(t)
+            if (d != null) return d.time
+        } catch (_: Exception) { }
+        return 0L
+    }
+    private fun showDate(ms: Long) = java.text.SimpleDateFormat("EEE, dd MMM yyyy", java.util.Locale.ENGLISH).format(java.util.Date(ms))
 
     private fun parseDur(s: String): Long {
         val p = s.trim().split(':').mapNotNull { it.toLongOrNull() }

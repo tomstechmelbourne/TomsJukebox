@@ -285,13 +285,19 @@ private fun ChannelPage(p: Podcast, eps: List<Episode>, busy: Boolean, msg: Stri
                     Column(Modifier.weight(1f)) {
                         Text(p.title, color = th.text, fontSize = 18.sp, fontWeight = FontWeight.Bold, maxLines = 2, overflow = TextOverflow.Ellipsis)
                         if (p.author.isNotBlank()) Text(p.author, color = th.muted, fontSize = 13.sp, maxLines = 1)
-                        if (eps.isNotEmpty()) Text(t("${eps.size} episodes", "${eps.size} tập"), color = th.muted, fontSize = 12.sp)
+                        val total = Podcasts.info[p.feed]?.count ?: eps.size
+                        if (eps.isNotEmpty()) Text(t("$total episodes", "$total tập") + if (total > eps.size) t(" (newest ${eps.size} shown)", " (hiện ${eps.size} tập mới nhất)") else "", color = th.muted, fontSize = 12.sp)
                     }
                 }
                 FlowRow {
                     Btn("▶ " + t("Play Latest", "Phát Mới Nhất"), th, primary = true) { onLatest() }
                     Btn(if (sub) "★ " + t("Following", "Đang Theo Dõi") else "☆ " + t("Follow", "Theo Dõi"), th) { Podcasts.toggle(p) }
                 }
+                val newest = Podcasts.info[p.feed]?.newest ?: 0L
+                if (!busy && newest > 0 && System.currentTimeMillis() - newest > 60L * 24 * 3600_000) Text(
+                    t("⚠ This channel stopped publishing – last episode ", "⚠ Kênh này đã ngưng cập nhật – tập mới nhất ngày ") +
+                        java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault()).format(java.util.Date(newest)),
+                    color = Color(0xFFFFB74D), fontSize = 13.sp, modifier = Modifier.padding(top = 6.dp))
                 if (busy) Text(t("Loading episodes…", "Đang tải các tập…"), color = th.muted)
                 if (msg.isNotBlank()) Text(msg, color = th.muted, fontSize = 12.sp)
             }

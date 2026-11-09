@@ -15,8 +15,8 @@ android {
         applicationId = "com.tomstechsolutions.jukebox"
         minSdk = 24
         targetSdk = tjSdk
-        versionCode = 930
-        versionName = "0.9.3-beta"
+        versionCode = 940
+        versionName = "0.9.4-beta"
         vectorDrawables { useSupportLibrary = true }
     }
 

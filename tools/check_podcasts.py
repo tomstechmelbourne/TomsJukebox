@@ -4,7 +4,7 @@ import json, re, time, urllib.request
 SRC = "app/src/main/java/com/tomstechsolutions/jukebox/data/PodcastGroups.kt"
 src = open(SRC, encoding="utf-8").read()
 out = []
-for key, en, vi, body in re.findall(r'PodGroup\("(\w+)", "([^"]+)", "([^"]+)", listOf\((.*?)\)\)', src, re.S):
+for key, en, vi, body in re.findall(r'PodGroup\("(\w+)", "([^"]+)", "([^"]+)", listOf\((.*?)\)(?:, news = true)?\)', src, re.S):
     ids = re.findall(r'"(\d+)"', body)
     got = {}
     for country in ["", "&country=vn", "&country=au"]:
@@ -13,7 +13,7 @@ for key, en, vi, body in re.findall(r'PodGroup\("(\w+)", "([^"]+)", "([^"]+)", l
         try:
             d = json.load(urllib.request.urlopen(urllib.request.Request("https://itunes.apple.com/lookup?id=" + ",".join(need) + country, headers={"User-Agent": "TomsJukebox-CI"}), timeout=25))
             for r in d.get("results", []):
-                if r.get("feedUrl"): got[str(r.get("collectionId"))] = r.get("collectionName")
+                if r.get("feedUrl"): got[str(r.get("collectionId"))] = f'{r.get("collectionName")}  (tập mới nhất {r.get("releaseDate","")[:10]})'
         except Exception as e:
             pass
         time.sleep(3)
