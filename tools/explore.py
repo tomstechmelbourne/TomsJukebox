@@ -1,24 +1,14 @@
 #!/usr/bin/env python3
-import json, re, time, urllib.request, email.utils
-ids = ["1303342739","1576144144","1896828280","1514580175","1349523628","73329715","1616444281","1536559302","92455788","1571503601","1574624782","1731182745","1571745841","161320292"]
-def get(u):
-    return urllib.request.urlopen(urllib.request.Request(u, headers={"User-Agent":"TomsJukebox/0.9.3 (Android)"}), timeout=30).read()
-d = json.loads(get("https://itunes.apple.com/lookup?id=" + ",".join(ids)))
-out = []
-for r in d["results"]:
-    f = r.get("feedUrl"); name = r.get("collectionName")
-    try:
-        x = get(f).decode("utf-8", "ignore")
-        items = re.findall(r"<item[\s>].*?</item>", x, re.S)
-        dates = []
-        for it in items:
-            m = re.search(r"<pubDate>(.*?)</pubDate>", it, re.S)
-            if m:
-                try: dates.append(email.utils.parsedate_to_datetime(m.group(1).strip()))
-                except Exception: pass
-        first = re.search(r"<pubDate>(.*?)</pubDate>", items[0], re.S).group(1) if items else "-"
-        out.append(f"{r.get('collectionId')} | {name} | items={len(items)} | first={first.strip()} | newest={max(dates) if dates else '-'} | releaseDate={r.get('releaseDate')} | {f}")
-    except Exception as e:
-        out.append(f"{r.get('collectionId')} | {name} | ERROR {e} | {f}")
-    time.sleep(1)
+import json, time, urllib.parse, urllib.request
+qs=["7NEWS","7 News","Seven News","Sunrise 7","10 News","Network 10","The Project 10","10 News First","Herald Sun","The Morning Edition","The Age","news.com.au","The Australian","Sky News Australia","ABC AM","ABC PM","Nine News","A Current Affair","Today Show Australia","3AW","Neil Mitchell","Melbourne news"]
+out=[]
+for q in qs:
+    u=f"https://itunes.apple.com/search?media=podcast&country=au&limit=8&term={urllib.parse.quote(q)}"
+    for a in range(3):
+        try: d=json.load(urllib.request.urlopen(urllib.request.Request(u,headers={"User-Agent":"TomsJukebox-CI"}),timeout=20)); break
+        except Exception: d={"results":[]}; time.sleep(10)
+    out.append(f"== {q}")
+    for r in d.get("results",[]):
+        if r.get("feedUrl"): out.append(f"   {r.get('collectionId')} | {r.get('releaseDate','')[:10]} | {r.get('collectionName')} | {r.get('artistName')}")
+    time.sleep(4)
 open("explore.txt","w").write("\n".join(out))
