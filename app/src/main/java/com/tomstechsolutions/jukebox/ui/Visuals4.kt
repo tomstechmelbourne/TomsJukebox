@@ -63,6 +63,51 @@ fun DrawScope.drawViz4(style: Int, time: Float, lv: FloatArray, cols: List<Color
             drawCircle(Brush.radialGradient(listOf(c.copy(alpha = 0.6f), Color.Transparent), Offset(fx * w, y), r * 2.6f), r * 2.6f, Offset(fx * w, y))
             drawCircle(c, r, Offset(fx * w, y))
         }
+        in 76..79 -> {                                                                   // 4 kiểu dải lụa
+            val sets = listOf(VIVID, listOf(Color(0xFFFFD1DC), Color(0xFFB388FF), Color(0xFF80D8FF), Color(0xFFFFFFFF), Color(0xFFFFE0B2), Color(0xFFB9F6CA)),
+                listOf(Color(0xFFFF6E40), Color(0xFFFF4081), Color(0xFFFFAB40), Color(0xFFAA00FF), Color(0xFFFFD740), Color(0xFFFF8A80)),
+                listOf(Color(0xFF00E5FF), Color(0xFF2979FF), Color(0xFF1DE9B6), Color(0xFF651FFF), Color(0xFF84FFFF), Color(0xFF00B0FF)))
+            val pc = sets[style - 76]
+            val ribbons = if (style == 77) 3 else 5
+            for (li in 0 until ribbons) {
+                val top = Path(); val bot = Path(); val pts = 70
+                val ys = FloatArray(pts + 1); val th = FloatArray(pts + 1)
+                for (k in 0..pts) { val fx = k / pts.toFloat()
+                    val twist = if (style == 77) sin(fx * 6f + time * 1.4f + li * 2f) else 1f          // Lụa Xoắn: dải lật qua lại
+                    ys[k] = h * (0.5f + 0.28f * sin(fx * (2.2f + li * 0.4f) + time * (0.5f + li * 0.12f) + li)) - h * 0.25f * level(fx, li)
+                    th[k] = h * (0.05f + 0.12f * level(fx, li + 1)) * twist }
+                for (k in 0..pts) { val x = w * k / pts; if (k == 0) top.moveTo(x, ys[k] - th[k]) else top.lineTo(x, ys[k] - th[k]) }
+                for (k in pts downTo 0) top.lineTo(w * k / pts, ys[k] + th[k])
+                top.close()
+                drawPath(top, Brush.horizontalGradient(listOf(pc[li % 6].copy(alpha = 0.5f), pc[(li + 1) % 6].copy(alpha = 0.6f), pc[(li + 2) % 6].copy(alpha = 0.45f))))
+                for (k in 0..pts) { val x = w * k / pts; if (k == 0) bot.moveTo(x, ys[k] - th[k]) else bot.lineTo(x, ys[k] - th[k]) }
+                drawPath(bot, Color.White.copy(alpha = if (style == 78) 0.55f else 0.3f), style = Stroke(1.5f))     // mép lụa óng ánh
+            }
+        }
+        in 80..83 -> {                                                                   // 4 kiểu bắc cực quang
+            val sets = listOf(listOf(Color(0xFF00E676), Color(0xFF1DE9B6), Color(0xFF00B0FF)), listOf(Color(0xFFE040FB), Color(0xFFFF4081), Color(0xFF7C4DFF)),
+                listOf(Color(0xFF69F0AE), Color(0xFFB388FF), Color(0xFF18FFFF)), listOf(Color(0xFF00E5FF), Color(0xFF76FF03), Color(0xFFEA80FC)))
+            val pc = sets[style - 80]
+            drawRect(Brush.verticalGradient(listOf(Color(0xFF020814), Color(0xFF071B2E))))
+            for (k in 0 until 40) { val sx = ((k * 0.618f) % 1f) * w; val sy = ((k * 0.377f) % 1f) * h * 0.6f
+                drawCircle(Color.White.copy(alpha = 0.3f + 0.4f * sin(time * 2f + k).let { it * it }), 1.2f, Offset(sx, sy)) }
+            for (layer in 0 until 3) {
+                val cols = 60
+                for (k in 0..cols) { val fx = k / cols.toFloat(); val v = level(fx, layer + 1)
+                    val base = h * (0.35f + 0.12f * sin(fx * (3f + layer) + time * (0.35f + layer * 0.15f) + layer * 2f)) + if (style == 82) h * 0.05f * sin(fx * 30f + time * 4f) else 0f
+                    val len = h * (0.18f + 0.45f * v) * (if (style == 81) 1.3f else 1f)
+                    val c = pc[layer]
+                    drawLine(Brush.verticalGradient(listOf(c.copy(alpha = 0f), c.copy(alpha = 0.18f + 0.35f * v), c.copy(alpha = 0.05f)), base - len * 0.3f, base + len),
+                        Offset(fx * w, base - len * 0.3f), Offset(fx * w, base + len), w / cols * 1.6f) }
+            }
+            if (style == 83) {                                                          // trên dãy núi tuyết
+                val p = Path().apply { moveTo(0f, h) }
+                for (k in 0..10) p.lineTo(w * k / 10f, h * (if (k % 2 == 0) 0.88f else 0.72f) - h * 0.06f * lv[(k * 2) % n])
+                p.lineTo(w, h); p.close(); drawPath(p, Color(0xFF0B1220))
+                for (k in 1..9 step 2) { val x = w * k / 10f; val y = h * 0.72f - h * 0.06f * lv[(k * 2) % n]
+                    drawPath(Path().apply { moveTo(x, y); lineTo(x + w * 0.035f, y + h * 0.05f); lineTo(x - w * 0.035f, y + h * 0.05f); close() }, Color(0xFFE3F2FD)) }
+            }
+        }
         else -> for (li in 0 until 6) {                                                  // Dòng Chảy Neon
             val p = Path()
             for (k in 0..90) { val fx = k / 90f; val y = h / 2 + sin(fx * (6f + li) + time * (1.2f + li * 0.25f)) * h * 0.38f * (0.2f + level(fx, li))

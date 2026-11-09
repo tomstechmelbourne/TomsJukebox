@@ -154,4 +154,7 @@ fun vizNamesMore() = listOf(
     // 70–75: sóng nhạc nhiều màu
     "Multicolour Silk Waves" to "Sóng Lụa Đa Sắc", "Soft Aurora" to "Cực Quang Mềm", "Glowing Mirror Wave" to "Sóng Đối Xứng Phát Sáng",
     "Rounded Colour Bars" to "Cột Bo Tròn Đa Sắc", "Bouncing Colour Drops" to "Giọt Màu Nhảy", "Neon Streams" to "Dòng Chảy Neon",
+    // 76–79: dải lụa · 80–83: bắc cực quang
+    "Flying Silk" to "Lụa Bay Nhiều Lớp", "Twisting Pastel Silk" to "Lụa Xoắn Pastel", "Shimmering Sunset Silk" to "Lụa Óng Ánh Hoàng Hôn", "Ocean Silk" to "Lụa Đại Dương",
+    "Green Northern Lights" to "Bắc Cực Quang Xanh Lá", "Pink & Violet Aurora" to "Cực Quang Tím Hồng", "Rippling Aurora Curtain" to "Màn Cực Quang Gợn Sóng", "Aurora Over Snowy Mountains" to "Cực Quang Trên Núi Tuyết",
 )
