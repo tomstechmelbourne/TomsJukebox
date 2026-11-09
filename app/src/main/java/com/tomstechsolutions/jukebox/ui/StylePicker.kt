@@ -263,7 +263,7 @@ fun StyleRow(cat: String, th: JTheme, onOpen: (String) -> Unit) {
     Row(Modifier.fillMaxWidth().padding(vertical = 4.dp).clip(RoundedCornerShape(14.dp)).background(th.card)
         .combinedClickableCompat { onOpen(cat) }.padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
         val cur = Pickers.current(cat)
-        Canvas(Modifier.size(width = 64.dp, height = 40.dp).clip(RoundedCornerShape(10.dp))) {
+        Canvas(Modifier.size(width = 56.dp, height = 38.dp).clip(RoundedCornerShape(10.dp))) {
             if (cur == "pack") { val i = Motifs.of("pack") ?: 0; with(Pickers) { swatch("pack", "m:$i", th) } }
             else if (cur.isNotBlank()) with(Pickers) { swatch(cat, cur, th) } else drawRect(Color(0xFF0B1720))
         }
@@ -272,8 +272,9 @@ fun StyleRow(cat: String, th: JTheme, onOpen: (String) -> Unit) {
             Text(Pickers.title(cat), color = th.text, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
             Text(Pickers.nameOf(cat, cur), color = th.muted, fontSize = 12.sp, maxLines = 1)
         }
-        Box(Modifier.clip(RoundedCornerShape(12.dp)).background(th.accent).padding(horizontal = 12.dp, vertical = 7.dp)) {
-            Text(t("Change…", "Đổi…"), color = th.onAccent, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+        Spacer(Modifier.width(6.dp))
+        Box(Modifier.clip(RoundedCornerShape(12.dp)).background(th.accent).padding(horizontal = 10.dp, vertical = 7.dp)) {
+            Text(t("Change…", "Đổi…"), color = th.onAccent, fontSize = 13.sp, fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false)
         }
     }
 }

@@ -31,7 +31,18 @@ adb shell input keyevent 111; sleep 2
 adb shell settings put system accelerometer_rotation 0
 adb shell settings put system user_rotation 1; sleep 4
 adb exec-out screencap -p > shots/api${API}_landscape.png
-adb shell settings put system user_rotation 0; sleep 2
+adb shell settings put system user_rotation 0; sleep 3
+# 0.9.3 pages: theme pack picker, visualisation picker, a theme pack applied, full-screen flag visualisation, podcast page
+M=com.tomstechsolutions.jukebox/.ui.MainActivity
+adb shell am start -n $M --es open_picker pack; sleep 4; adb exec-out screencap -p > shots/api${API}_picker_pack.png
+adb shell input keyevent 4; sleep 2
+adb shell am start -n $M --es open_picker viz; sleep 4; adb exec-out screencap -p > shots/api${API}_picker_viz.png
+adb shell input keyevent 4; sleep 2
+adb shell am start -n $M --ei apply_pack 58 --es open_tab 0; sleep 4; adb exec-out screencap -p > shots/api${API}_pack58.png
+adb shell am start -n $M --ei set_viz 58 --ez full_viz true; sleep 4; adb exec-out screencap -p > shots/api${API}_flag.png
+adb shell input keyevent 4; sleep 2
+adb shell am start -n $M --ei apply_pack 52 --es open_tab 2; sleep 12; adb exec-out screencap -p > shots/api${API}_podcast.png
+adb shell am start -n $M --es open_tab 4; sleep 3; adb exec-out screencap -p > shots/api${API}_more.png
 PID=$(adb shell pidof com.tomstechsolutions.jukebox)
 adb logcat -d > shots/api${API}_logcat.txt
 grep -A 30 "FATAL EXCEPTION" shots/api${API}_logcat.txt | grep -B2 -A 28 "Process: com.tomstechsolutions.jukebox" > shots/api${API}_crash.txt || true

@@ -135,6 +135,11 @@ class MainActivity : ComponentActivity() {
         }
         i.getStringExtra("open_tab")?.toIntOrNull()?.let { tab.intValue = it; openNow.value = false }
         if (i.getBooleanExtra("open_sleep", false)) showSleep.value = true
+        // used by the emulator test to look at the new pages
+        i.getIntExtra("apply_pack", -1).takeIf { it in Motifs.list.indices }?.let { Motifs.applyPack(it) }
+        i.getIntExtra("set_viz", -1).takeIf { it in VizStyles.names.indices }?.let { Prefs.viz.value = it; Prefs.vizAuto.value = false }
+        i.getStringExtra("open_picker")?.takeIf { it in Pickers.cats }?.let { picker.value = it }
+        if (i.getBooleanExtra("full_viz", false)) fullViz.value = true
     }
 
     override fun onResume() {
