@@ -88,7 +88,7 @@ fun RadioScreen(act: MainActivity, th: JTheme) {
             busy = true; filter = "ONLINE"
             scope.launch { online = try { RadioApi.search(query) } catch (_: Exception) { note = t("Can't reach the station list right now.", "Hiện không kết nối được danh sách đài."); emptyList() }; busy = false }
         }
-        val chips = listOf("NEAR" to t("Near Me", "Gần Tôi") + " (${Prefs.radioState.value})", "NAT" to t("Australia-Wide", "Toàn Úc")) +
+        val chips = listOf("FAV" to "★ " + t("Favourites", "Yêu Thích"), "NEAR" to t("Near Me", "Gần Tôi") + " (${Prefs.radioState.value})", "NAT" to t("Australia-Wide", "Toàn Úc")) +
             Stations.auStates.map { it to it } +
             listOf("VN" to t("Vietnam", "Việt Nam"), "VIET" to t("Vietnamese Overseas", "Tiếng Việt Hải Ngoại"), "GENRE" to t("Genres", "Thể Loại"))
         Row(Modifier.horizontalScroll(rememberScrollState())) { chips.forEach { (k, s) -> Chip(s, filter == k, th) { filter = k; online = emptyList() } } }
@@ -113,6 +113,7 @@ fun RadioScreen(act: MainActivity, th: JTheme) {
         if (note.isNotBlank()) Text(note, color = th.muted, fontSize = 12.sp)
         val list: List<Station> = when (filter) {
             "ONLINE" -> online
+            "FAV" -> Prefs.radioFavs.value.split('\n').filter { it.isNotBlank() }.mapNotNull { n -> Stations.all.firstOrNull { it.name == n } }
             "NEAR" -> Stations.all.filter { it.group == Prefs.radioState.value || it.group == "NAT" || it.group == "AUVN" }
             "VN" -> Stations.all.filter { it.country == "VN" }
             "VIET" -> Stations.all.filter { it.country == "OS" }
@@ -137,6 +138,12 @@ fun RadioScreen(act: MainActivity, th: JTheme) {
                             .padding(horizontal = 14.dp, vertical = 10.dp)) {
                             Text(if (Core.recording.value) "■ " + t("Stop", "Dừng") else "● " + t("Record", "Thâu"), color = if (Core.recording.value) Color.White else Color(0xFFFF6B6B),
                                 fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                        }
+                        val fav = s.name in Prefs.radioFavs.value.split('\n')
+                        IconBtn(if (fav) Gl.starFull else Gl.star, if (fav) th.accent else th.muted, 20.dp, pad = 6.dp) {
+                            val l = Prefs.radioFavs.value.split('\n').filter { it.isNotBlank() }
+                            Prefs.radioFavs.value = (if (fav) l - s.name else l + s.name).joinToString("\n")
+                            com.tomstechsolutions.jukebox.system.Widgets.refresh(com.tomstechsolutions.jukebox.App.ctx)
                         }
                         IconBtn(if (playing && Core.playing.value) Gl.pause else Gl.play, th.text, 24.dp) { if (playing) Core.toggle() else { Core.radioList = list; Core.playStation(s) } }
                     }) { if (playing) act.openNow.value = true else { Core.radioList = list; Core.playStation(s) } }

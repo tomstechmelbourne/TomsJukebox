@@ -91,26 +91,12 @@ fun MoreScreen(act: MainActivity, th: JTheme) {
         if (toast.isNotBlank()) Card(th) { Text(toast, color = th.accent) }
 
         // ---------- looks ----------
-        SectionTitle(t("Colour Theme", "Màu Giao Diện"), th)
-        FlowRow {
-            Themes.list.forEach { tm ->
-                Column(Modifier.padding(end = 10.dp, bottom = 10.dp).clickable { Prefs.theme.value = tm.key }, horizontalAlignment = Alignment.CenterHorizontally) {
-                    Box(Modifier.size(width = 64.dp, height = 44.dp).clip(RoundedCornerShape(12.dp)).background(tm.bg)
-                        .border(if (Prefs.theme.value == tm.key) 3.dp else 1.dp, if (Prefs.theme.value == tm.key) th.accent else th.muted.copy(alpha = 0.3f), RoundedCornerShape(12.dp)),
-                        contentAlignment = Alignment.BottomEnd) { Box(Modifier.padding(6.dp).size(14.dp).clip(RoundedCornerShape(7.dp)).background(tm.accent)) }
-                    Text(tm.name.take(14), color = th.text, fontSize = 10.sp, maxLines = 1)
-                }
-            }
-            Column(Modifier.padding(end = 10.dp, bottom = 10.dp).clickable { Prefs.theme.value = "custom" }, horizontalAlignment = Alignment.CenterHorizontally) {
-                Box(Modifier.size(width = 64.dp, height = 44.dp).clip(RoundedCornerShape(12.dp)).background(Brush.horizontalGradient(BarColours.gradients["rainbow"]!!))
-                    .border(if (Prefs.theme.value == "custom") 3.dp else 1.dp, th.accent, RoundedCornerShape(12.dp)))
-                Text(t("Custom", "Tự Chọn"), color = th.text, fontSize = 10.sp)
-            }
-        }
+        SectionTitle(t("Theme Packs And Styles", "Bộ Chủ Đề Và Kiểu Dáng"), th)
+        Text(t("Pick a Theme Pack to change everything at once, or change each part on its own.", "Chọn Bộ Chủ Đề để đổi tất cả một lần, hoặc đổi riêng từng mục."), color = th.muted, fontSize = 12.sp)
+        Pickers.cats.filter { it != "viz" }.forEach { StyleRow(it, th) { c -> act.picker.value = c } }
         if (Prefs.theme.value == "custom") HuePicker(Prefs.customAccent.value, th) { Prefs.customAccent.value = it }
+        Row { Btn(t("Custom Theme Colour", "Màu Giao Diện Tự Chọn"), th) { Prefs.theme.value = "custom" } }
 
-        SectionTitle(t("Skin", "Skin"), th)
-        FlowRow { SkinList.keys.forEach { k -> Chip(SkinList.name(k), Prefs.skin.value == k, th) { Prefs.skin.value = k } } }
         when (Prefs.skin.value) {
             "xp" -> FlowRow { Skins.xpColours.forEach { (k, n) -> Chip(n, Prefs.xpColour.value == k, th) { Prefs.xpColour.value = k } } }
             "grain" -> FlowRow { SkinList.woodTypes.forEachIndexed { i, (en, vi) -> Chip(t(en, vi), Prefs.woodType.value == i, th) { Prefs.woodType.value = i } } }
@@ -124,39 +110,11 @@ fun MoreScreen(act: MainActivity, th: JTheme) {
         SwitchRow(t("Double-Tap The Pill To Change Colour", "Nhấp 2 Lần Để Đổi Màu"), th, Prefs.dblTapColour.value,
             t("Off = the small pill opens Now Playing a little faster.", "Tắt thì viên thuốc nhỏ mở trang Đang Phát nhanh hơn một chút.")) { Prefs.dblTapColour.value = it }
 
-        SectionTitle(t("Play Buttons", "Kiểu Nút Phát Nhạc"), th)
-        FlowRow {
-            ButtonArt.names.indices.forEach { i ->
-                Column(Modifier.padding(end = 8.dp, bottom = 8.dp).width(100.dp).clip(RoundedCornerShape(14.dp))
-                    .background(if (Prefs.btnStyle.value == i) th.accent.copy(alpha = 0.22f) else th.card).clickable { Prefs.btnStyle.value = i }.padding(6.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        for (k in listOf(ButtonArt.PREV, ButtonArt.PLAY, ButtonArt.NEXT)) androidx.compose.foundation.Canvas(Modifier.size(if (k == ButtonArt.PLAY) 30.dp else 22.dp)) {
-                            drawIntoCanvas { c -> ButtonArt.draw(c.nativeCanvas, k, i, size.width, (if (th.light) Color(0xFF1B2733) else Color.White).toArgb()) }
-                        }
-                    }
-                    Text(ButtonArt.name(i), color = th.text, fontSize = 11.sp, maxLines = 1)
-                }
-            }
-        }
-        Text(t("Button colour", "Màu nút"), color = th.text)
-        FlowRow { listOf("white" to t("White", "Trắng"), "cover" to t("From Cover", "Theo Ảnh Bìa"), "theme" to t("Theme Colour", "Màu Giao Diện"), "custom" to t("Custom", "Tự Chọn"))
-            .forEach { (k, n) -> Chip(n, Prefs.btnColour.value == k, th) { Prefs.btnColour.value = k } } }
         if (Prefs.btnColour.value == "custom") HuePicker(Prefs.btnCustom.value, th) { Prefs.btnCustom.value = it }
         Text(t("Button size", "Cỡ nút"), color = th.text)
         FlowRow { listOf(0.85f to t("Small", "Nhỏ"), 1f to t("Medium", "Vừa"), 1.2f to t("Large", "To"), 1.45f to t("Very Large", "Rất To"))
             .forEach { (v, n) -> Chip(n, Prefs.btnScale.value == v, th) { Prefs.btnScale.value = v } } }
 
-        SectionTitle(t("Time Bar Colour", "Màu Thanh Thời Gian"), th)
-        FlowRow {
-            BarColours.list.forEach { (_, _, key) ->
-                val brush = when { key.startsWith("grad:") -> Brush.horizontalGradient(BarColours.gradients[key.removePrefix("grad:")]!!)
-                    key == "cover" -> Brush.sweepGradient(com.tomstechsolutions.jukebox.playback.Core.palette.value.map { Color(it) } + Color(com.tomstechsolutions.jukebox.playback.Core.palette.value[0])); else -> null }
-                Swatch(if (brush == null) BarColours.hex(key) else Color.Gray, Prefs.barColour.value == key, th, 34.dp, brush) { Prefs.barColour.value = key }
-            }
-            Swatch(Color(Prefs.customBar.value), Prefs.barColour.value == "custom", th, 34.dp) { Prefs.barColour.value = "custom" }
-        }
-        Text(BarColours.list.firstOrNull { it.third == Prefs.barColour.value }?.let { t(it.first, it.second) } ?: t("Custom Colour", "Tự Chọn Màu"), color = th.muted, fontSize = 12.sp)
         if (Prefs.barColour.value == "custom") HuePicker(Prefs.customBar.value, th) { Prefs.customBar.value = it }
 
         SectionTitle(t("Text Size And Language", "Cỡ Chữ Và Ngôn Ngữ"), th)
@@ -171,17 +129,8 @@ fun MoreScreen(act: MainActivity, th: JTheme) {
         SectionTitle(t("Edge Lighting", "Ánh Sáng Chạy Viền"), th)
         Card(th) {
             SwitchRow(t("Edge Lighting On", "Bật Ánh Sáng Chạy Viền"), th, Prefs.edgeOn.value, t("Only while music is playing.", "Chỉ chạy khi đang phát nhạc.")) { Prefs.edgeOn.value = it }
-            FlowRow {
-                EdgeEffects.names.indices.forEach { i ->
-                    Column(Modifier.padding(end = 8.dp, bottom = 8.dp).width(96.dp).clickable { Prefs.edgeEffect.value = i; Prefs.edgeAuto.value = false; Prefs.edgeRandom.value = false },
-                        horizontalAlignment = Alignment.CenterHorizontally) {
-                        Box(Modifier.size(96.dp, 56.dp).border(if (Prefs.edgeEffect.value == i && !Prefs.edgeAuto.value) 2.dp else 0.dp, th.accent, RoundedCornerShape(14.dp))) {
-                            EdgePreview(i, Modifier.fillMaxSize())
-                        }
-                        Text(EdgeEffects.name(i), color = th.text, fontSize = 11.sp, maxLines = 2)
-                    }
-                }
-            }
+            Box(Modifier.fillMaxWidth().height(70.dp).clip(RoundedCornerShape(14.dp))) { EdgePreview(Motifs.edgeStyle().first, Modifier.fillMaxSize()) }
+            Text(t("Change the effect with \"Edge Lighting › Change…\" above.", "Đổi kiểu bằng mục \"Ánh Sáng Chạy Viền › Đổi…\" ở trên."), color = th.muted, fontSize = 12.sp)
             SliderRow(t("Speed", "Tốc Độ") + "  ( [ ] )", th, Prefs.edgeSpeed.value.toFloat(), 0f..4f, 3, EdgeEffects.speedName(Prefs.edgeSpeed.value)) { Prefs.edgeSpeed.value = it.toInt() }
             Text(t("Colour", "Màu"), color = th.text)
             FlowRow {
@@ -204,6 +153,8 @@ fun MoreScreen(act: MainActivity, th: JTheme) {
             SwitchRow(t("Match The Screen Corners Automatically", "Tự Khớp Góc Màn Hình"), th, auto, t("Turn off to set the corner yourself.", "Tắt để tự chỉnh độ bo góc.")) { Prefs.edgeCorner.value = if (it) -1f else 40f }
             if (!auto) SliderRow(t("Corner Roundness", "Độ Bo Góc"), th, Prefs.edgeCorner.value, 0f..80f, label = "${Prefs.edgeCorner.value.toInt()} dp") { Prefs.edgeCorner.value = it }
         }
+
+        MoreExtras(act, th)
 
         // ---------- sleep, driving ----------
         SectionTitle(t("Sleep Timer And Driving", "Hẹn Giờ Và Lái Xe"), th)

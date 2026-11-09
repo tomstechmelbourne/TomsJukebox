@@ -36,12 +36,13 @@ fun EdgeLight(modifier: Modifier, radius: Dp, effectOverride: Int? = null, force
         if (Anim.lowPower.value && !force) return@Canvas
         val auto = Prefs.edgeAuto.value && effectOverride == null
         val count = EdgeEffects.names.size
+        val (chosen, mo) = Motifs.edgeStyle()
         val effect = effectOverride ?: when {
             Prefs.edgeRandom.value -> ((Core.uri.value.hashCode() and 0x7fffffff) % count)
             auto -> ((clock / 30f).toInt() % count)
-            else -> Prefs.edgeEffect.value
+            else -> chosen
         }
-        drawEdge(effect, clock, radius.toPx(), edgeColours(), Prefs.edgeThick.value.dp.toPx(), Prefs.edgeBright.value,
+        drawEdge(effect, clock, radius.toPx(), if (mo != null && effectOverride == null) mo.colours.drop(1) else edgeColours(), Prefs.edgeThick.value.dp.toPx(), Prefs.edgeBright.value,
             EdgeEffects.speeds[Prefs.edgeSpeed.value.coerceIn(0, 4)])
     }
 }

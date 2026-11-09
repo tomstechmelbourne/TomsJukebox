@@ -108,6 +108,23 @@
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_large_info" />
         </receiver>
 
+        <receiver android:name=".system.WidgetRadio" android:exported="false" android:label="@string/widget_radio">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_radio_info" />
+        </receiver>
+        <receiver android:name=".system.WidgetPodcast" android:exported="false" android:label="@string/widget_podcast">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_podcast_info" />
+        </receiver>
+        <receiver android:name=".system.WidgetSleep" android:exported="false" android:label="@string/widget_sleep">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_sleep_info" />
+        </receiver>
+        <receiver android:name=".system.WidgetCover" android:exported="false" android:label="@string/widget_cover">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_cover_info" />
+        </receiver>
+        <receiver android:name=".system.WidgetActions" android:exported="false" />
         <meta-data android:name="com.samsung.android.keepalive.density" android:value="true" />
         <meta-data android:name="com.samsung.android.multidisplay.keep_process_alive" android:value="true" />
     </application>

@@ -62,7 +62,7 @@ private val SUBW = Color(0xFFE8DCD0)
 private val INK = Color(0xFF1E2333)
 private val INKSUB = Color(0xFF4A5068)
 
-fun skinStyle(): SkinStyle = when (Prefs.skin.value) {
+fun skinStyle(key: String = Prefs.skin.value): SkinStyle = Motifs.skinMotif(key)?.let { motifSkinStyle(it) } ?: when (key) {
     "xp" -> when (Prefs.xpColour.value) {
         "silver" -> SkinStyle(INK, INKSUB, Color(0xFF2B3550), Color(0xFF8D90A6), 18.dp)
         "olive" -> SkinStyle(W, Color(0xFFF1F6E2), W, Color(0xFF3F5424), 18.dp)
@@ -91,10 +91,11 @@ fun skinStyle(): SkinStyle = when (Prefs.skin.value) {
 }
 
 /** Paints the pill background for the chosen skin. */
-fun DrawScope.paintSkin(clock: Float, tilt: Float) {
+fun DrawScope.paintSkin(clock: Float, tilt: Float, key: String = Prefs.skin.value) {
     val w = size.width; val h = size.height
     fun vg(vararg c: Long) = drawRect(Brush.verticalGradient(c.map { Color(it) }))
-    when (Prefs.skin.value) {
+    Motifs.skinMotif(key)?.let { paintMotifSkin(it, clock); return }
+    when (key) {
         "xp" -> {
             when (Prefs.xpColour.value) { "silver" -> vg(0xFFF6F6FA, 0xFFDADBE5, 0xFFB4B6C6); "olive" -> vg(0xFFC9D8A0, 0xFF93A867, 0xFF5B7638); else -> vg(0xFF4A8BF0, 0xFF2159CC, 0xFF0F3C9E) }
             drawRoundRect(Brush.verticalGradient(listOf(Color(0x66FFFFFF), Color(0x10FFFFFF)), 0f, h / 2), Offset(6f, 3f), Size(w - 12f, h / 2 - 3f), CornerRadius(h / 3))
@@ -179,12 +180,12 @@ fun DrawScope.paintSkin(clock: Float, tilt: Float) {
 }
 
 /** The skin's outline (neon glows). */
-fun DrawScope.paintSkinBorder(radiusPx: Float, border: Color) {
-    if (Prefs.skin.value == "neon") {
+fun DrawScope.paintSkinBorder(radiusPx: Float, border: Color, key: String = Prefs.skin.value) {
+    if (key == "neon") {
         for ((wd, a) in listOf(10f to 0.15f, 5f to 0.35f, 2f to 1f)) {
             drawRoundRect(Brush.horizontalGradient(listOf(Color(0xFFFF3DCB), Color(0xFF7DF9FF))), Offset(2f, 2f), Size(size.width - 4f, size.height - 4f), CornerRadius(radiusPx), alpha = a, style = Stroke(wd))
         }
-    } else if (Prefs.skin.value == "lacquer" || Prefs.skin.value == "gold") {
+    } else if (key == "lacquer" || key == "gold" || Motifs.skinMotif(key) != null) {
         drawRoundRect(border, Offset(1.5f, 1.5f), Size(size.width - 3f, size.height - 3f), CornerRadius(radiusPx), style = Stroke(3f))
     } else drawRoundRect(border, Offset(0.5f, 0.5f), Size(size.width - 1f, size.height - 1f), CornerRadius(radiusPx), style = Stroke(1.2f))
 }

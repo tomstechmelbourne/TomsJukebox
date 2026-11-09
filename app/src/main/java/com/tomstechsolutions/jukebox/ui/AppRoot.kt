@@ -80,9 +80,8 @@ fun JukeboxApp(act: MainActivity) {
 
 @Composable
 private fun AppBody(act: MainActivity, th: JTheme) {
-    var splash by remember { mutableStateOf(true) }
+    var splash by remember { mutableStateOf(Prefs.splashOn.value && !act.skipSplash) }
     var driving by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) { delay(1300); splash = false }
     BackHandler(act.openNow.value) { act.openNow.value = false }
     BackHandler(driving) { driving = false }
 
@@ -127,7 +126,10 @@ private fun AppBody(act: MainActivity, th: JTheme) {
         }
         AnimatedVisibility(driving, enter = fadeIn(), exit = fadeOut()) { DrivingScreen(th) { driving = false } }
         if (act.showSleep.value) SleepDialog(th) { act.showSleep.value = false }
-        AnimatedVisibility(splash, enter = fadeIn(), exit = fadeOut()) { Splash() }
+        if (act.picker.value.isNotBlank()) StylePicker(act.picker.value, th) { act.picker.value = "" }
+        if (act.fullViz.value) FullViz { act.fullViz.value = false }
+        if (act.previewSplash.intValue >= 0) AnimatedSplash(act.previewSplash.intValue) { act.previewSplash.intValue = -1 }
+        if (splash) AnimatedSplash(Prefs.splashStyle.value) { splash = false }
     }
 }
 
@@ -163,40 +165,6 @@ fun Header(act: MainActivity, th: JTheme) {
                 contentAlignment = Alignment.Center) { Text("$unread", color = Color.White, fontSize = 9.sp) }
         }
         IconBtn(Gl.timer, if (Core.sleepMode.value != "NONE") th.accent else th.muted) { act.showSleep.value = true }
-    }
-}
-
-@Composable
-fun BottomNav(act: MainActivity, th: JTheme) {
-    val items = listOf(Gl.list to t("Library", "Thư Viện"), Gl.radio to "Radio", Gl.podcast to "Podcast", Gl.eq to t("Sound", "Chỉnh Âm"), Gl.more to t("More", "Thêm"))
-    val clock by rememberClock()
-    Box(Modifier.fillMaxWidth().background(th.nav)) {
-        // little music wave along the top edge of the bar
-        Canvas(Modifier.fillMaxWidth().height(10.dp)) {
-            if (!Core.playing.value || Anim.lowPower.value || !Prefs.vizOn.value || !Prefs.vizNav.value) return@Canvas
-            val lv = levelsAt(clock); val cols = Core.palette.value
-            val p = Path().apply { moveTo(0f, 0f) }
-            for (k in 0..48) {
-                val fx = k / 48f
-                var y = 0f
-                for (b in 0 until 5) y += lv[(b * 4) % 24] * exp(-((fx - (b * 0.22f + 0.05f + clock * 0.02f) % 1.1f) / 0.07f).let { it * it })
-                p.lineTo(fx * size.width, min(1f, y) * size.height)
-            }
-            p.lineTo(size.width, 0f); p.close()
-            drawPath(p, Brush.horizontalGradient(cols.map { Color(it).copy(alpha = 0.55f) }))
-        }
-        Row(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
-            items.forEachIndexed { i, (ic, label) ->
-                val on = act.tab.intValue == i
-                val hp = haptic()
-                Column(Modifier.weight(1f).clip(RoundedCornerShape(16.dp)).clickable { hp(); act.tab.intValue = i }.padding(vertical = 4.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally) {
-                    Box(Modifier.clip(RoundedCornerShape(15.dp)).background(if (on) th.accent.copy(alpha = 0.18f) else Color.Transparent)
-                        .padding(horizontal = 16.dp, vertical = 4.dp)) { G(ic, if (on) th.accent else th.muted, 22.dp) }
-                    Text(label, color = if (on) th.accent else th.muted, fontSize = 11.sp, fontWeight = if (on) FontWeight.Bold else FontWeight.Normal, maxLines = 1)
-                }
-            }
-        }
     }
 }
 

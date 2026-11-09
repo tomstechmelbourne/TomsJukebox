@@ -50,8 +50,18 @@ object ButtonArt {
         REC_STOP to listOf("........", "........", "..####..", "..####..", "..####..", "..####..", "........", "........"),
     )
 
-    fun draw(c: Canvas, kind: Int, style: Int, size: Float, color: Int, pressed: Boolean = false, glow: Float = 0f) {
+    fun draw(c: Canvas, kind: Int, styleIn: Int, size: Float, color: Int, pressed: Boolean = false, glow: Float = 0f) {
+        val (style, deco) = Motifs.buttonStyle(styleIn)
         val pc = Paint(Paint.ANTI_ALIAS_FLAG)
+        if (deco != null) {                       // theme button set: the theme's colours as a ring behind the button
+            val cs = deco.c.map { it.toInt() }
+            pc.shader = android.graphics.SweepGradient(size / 2, size / 2, intArrayOf(cs[1], cs[2], cs[3], cs[1]), null)
+            pc.style = Paint.Style.STROKE; pc.strokeWidth = size * 0.06f
+            c.drawCircle(size / 2, size / 2, size * 0.47f, pc)
+            pc.shader = RadialGradient(size / 2, size / 2, size * 0.47f, intArrayOf((cs[1] and 0x00FFFFFF) or 0x40000000, (cs[2] and 0x00FFFFFF) or 0x10000000), null, Shader.TileMode.CLAMP)
+            pc.style = Paint.Style.FILL; c.drawCircle(size / 2, size / 2, size * 0.44f, pc)
+            pc.reset(); pc.isAntiAlias = true
+        }
         val col = if (kind == REC || kind == REC_STOP) 0xFFFF4D4D.toInt() else color
         val cx = size / 2; val cy = size / 2
         val dark = 0xFF1B1F24.toInt()

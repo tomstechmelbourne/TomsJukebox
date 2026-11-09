@@ -27,6 +27,10 @@ class MainActivity : ComponentActivity() {
     val openNow = mutableStateOf(false)
     val tab = mutableIntStateOf(0)
     val openRecordings = mutableStateOf(false)
+    val picker = mutableStateOf("")                 // trang chọn kiểu đang mở
+    val fullViz = mutableStateOf(false)
+    val previewSplash = mutableIntStateOf(-1)
+    var skipSplash = false
     val confirmDelete = mutableStateOf<List<String>>(emptyList())   // Android 9 and older: our own "are you sure"
     private var pendingDelete: List<String> = emptyList()
 
@@ -108,10 +112,29 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         Core.connect(applicationContext)
+        if (intent?.getBooleanExtra("open_now", false) == true) { skipSplash = true; openNow.value = true }
+        intent?.let { openFrom(it) }
         audioAllowed.value = hasAudio()
         if (!audioAllowed.value) askAudio()
         else if (!Library.loaded.value) lifecycleScope.launch { Library.scan(this@MainActivity) }
         setContent { JukeboxApp(this) }
+    }
+
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        if (intent.getBooleanExtra("open_now", false)) openNow.value = true
+        intent.getStringExtra("open_tab")?.let { tab.intValue = it.toIntOrNull() ?: tab.intValue }
+        openFrom(intent)
+    }
+
+    /** Pinned podcast shortcut, "new episode" alert, or a widget page button. */
+    private fun openFrom(i: android.content.Intent) {
+        i.getStringExtra("open_podcast")?.takeIf { it.isNotBlank() }?.let { feed ->
+            PodcastNav.openPodcast.value = com.tomstechsolutions.jukebox.data.Podcast(i.getStringExtra("open_podcast_title") ?: "", "", feed, i.getStringExtra("open_podcast_image") ?: "")
+            tab.intValue = 2; openNow.value = false
+        }
+        i.getStringExtra("open_tab")?.toIntOrNull()?.let { tab.intValue = it; openNow.value = false }
+        if (i.getBooleanExtra("open_sleep", false)) showSleep.value = true
     }
 
     override fun onResume() {
@@ -139,7 +162,7 @@ class MainActivity : ComponentActivity() {
             KeyEvent.KEYCODE_R -> { Core.cycleRepeat(); true }
             KeyEvent.KEYCODE_LEFT_BRACKET -> { Prefs.edgeSpeed.value = (Prefs.edgeSpeed.value - 1).coerceAtLeast(0); true }
             KeyEvent.KEYCODE_RIGHT_BRACKET -> { Prefs.edgeSpeed.value = (Prefs.edgeSpeed.value + 1).coerceAtMost(4); true }
-            KeyEvent.KEYCODE_E -> { Prefs.edgeEffect.value = (Prefs.edgeEffect.value + 1) % EdgeEffects.names.size; true }
+            KeyEvent.KEYCODE_E -> { Prefs.edgeEffect.value = (Motifs.edgeStyle().first + 1) % EdgeEffects.names.size; true }
             KeyEvent.KEYCODE_T -> if (ctrl && shift) { showSleep.value = true; true } else false
             KeyEvent.KEYCODE_L -> { if (ctrl) tab.intValue = 0 else if (shift) tab.intValue = 0 else { openNow.value = true; showLyrics.value = !showLyrics.value }; true }
             KeyEvent.KEYCODE_G -> { Prefs.viz.value = (Prefs.viz.value + 1) % VizStyles.names.size; true }

@@ -12,6 +12,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -119,7 +120,7 @@ fun TimeBar(modifier: Modifier, thick: Dp, knob: Dp) {
 }
 
 /** Colour the buttons are painted in (Trắng / Theo Ảnh Bìa / Màu Giao Diện / Tự Chọn). */
-fun buttonColour(skinBtn: Color, accent: Color = ORANGE): Color = when (Prefs.btnColour.value) {
+fun buttonColour(skinBtn: Color, accent: Color = ORANGE): Color = Motifs.of(Prefs.btnColour.value)?.let { Motifs.list[it].accent } ?: when (Prefs.btnColour.value) {
     "cover" -> Color(Core.palette.value[0])
     "theme" -> accent
     "custom" -> Color(Prefs.btnCustom.value)
@@ -133,7 +134,7 @@ fun CtlBtn(kind: Int, size: Dp, colour: Color, seekDir: Int = 0, onClick: () -> 
     val hp = haptic()
     var pressed by remember { mutableStateOf(false) }
     val s = size * Prefs.btnScale.value
-    val glow = if (Prefs.btnStyle.value == 6) levelsAt(System.nanoTime() / 1e9f).take(4).average().toFloat() else 0f
+    val glow = if (Motifs.buttonStyle().first == 6) levelsAt(System.nanoTime() / 1e9f).take(4).average().toFloat() else 0f
     Box(Modifier.size(s + 8.dp).clip(CircleShape).pointerInput(seekDir) {
         detectTapGestures(onPress = {
             pressed = true
@@ -179,14 +180,16 @@ fun cycleSkinColour(): String = when (Prefs.skin.value) {
 /** The Tom's Dock pill: two rows when big (Now Playing / lock screen), one row at the bottom of the app. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun Pill(modifier: Modifier = Modifier, big: Boolean, onOpen: () -> Unit = {}, onLong: () -> Unit = {}) {
+fun Pill(modifier: Modifier = Modifier, big: Boolean, onOpen: () -> Unit = {}, onLong: () -> Unit = {}, sizeKey: String? = null, gestures: Boolean = true) {
     val clock by rememberClock()
     val st = skinStyle()
     val slim = Prefs.skin.value == "slim"
-    val h = when { big && slim -> 104.dp; big -> 150.dp; slim -> 56.dp; else -> 72.dp }
+    val mini = if (big) "" else (sizeKey ?: Prefs.miniSize.value)
+    val h = when { big && slim -> 104.dp; big -> 150.dp; mini == "small" -> if (slim) 56.dp else 66.dp; mini == "large" -> 136.dp; else -> 106.dp }
     val radius = st.radius ?: (h / 2)
     val shape = RoundedCornerShape(radius)
     var dragX by remember { mutableFloatStateOf(0f) }
+    var dragY by remember { mutableFloatStateOf(0f) }
     var toast by remember { mutableStateOf("") }
     var toastAt by remember { mutableLongStateOf(0L) }
     LaunchedEffect(toastAt) { if (toastAt > 0) { delay(1100); toast = "" } }
@@ -209,14 +212,16 @@ fun Pill(modifier: Modifier = Modifier, big: Boolean, onOpen: () -> Unit = {}, o
                         waves(clock, levelsAt(clock), Core.palette.value.map { Color(it) }, Prefs.waveHeight.value, Prefs.waveStrength.value)
                     paintSkinBorder(radius.toPx(), st.border)
                 }
-                .pointerInput(Unit) {
-                    detectHorizontalDragGestures(onDragEnd = {
-                        if (Prefs.swipePill.value) { if (dragX < -80) Core.next() else if (dragX > 80) Core.prev() }
-                        dragX = 0f
-                    }) { _, dx -> dragX += dx }
+                .then(if (!gestures) Modifier else Modifier
+                .pointerInput(big) {
+                    detectDragGestures(onDragEnd = {
+                        if (kotlin.math.abs(dragX) > kotlin.math.abs(dragY)) { if (Prefs.swipePill.value) { if (dragX < -80) Core.next() else if (dragX > 80) Core.prev() } }
+                        else if (!big && dragY < -50) onOpen()          // vuốt lên mở Đang Phát
+                        dragX = 0f; dragY = 0f
+                    }, onDragCancel = { dragX = 0f; dragY = 0f }) { ch, d -> ch.consume(); dragX += d.x; dragY += d.y }
                 }
                 .combinedClickable(onClick = onOpen, onLongClick = onLong,
-                    onDoubleClick = if (Prefs.dblTapColour.value) ({ hp(); toast = cycleSkinColour(); toastAt = System.currentTimeMillis() }) else null),
+                    onDoubleClick = if (Prefs.dblTapColour.value) ({ hp(); toast = cycleSkinColour(); toastAt = System.currentTimeMillis() }) else null)),
         ) {
             val title = Core.title.value.ifBlank { "Tom's Jukebox" }
             val sub = listOf(Core.artist.value, Core.album.value).filter { it.isNotBlank() }.joinToString(" · ")
@@ -253,7 +258,7 @@ fun Pill(modifier: Modifier = Modifier, big: Boolean, onOpen: () -> Unit = {}, o
                     }
                 }
             }
-            else {
+            else if (mini == "small") {
                 Row(Modifier.fillMaxSize().padding(if (slim) 5.dp else 7.dp), verticalAlignment = Alignment.CenterVertically) {
                     Disc(h - if (slim) 10.dp else 14.dp, clock)
                     Spacer(Modifier.width(8.dp))
@@ -270,9 +275,43 @@ fun Pill(modifier: Modifier = Modifier, big: Boolean, onOpen: () -> Unit = {}, o
                     CtlBtn(playKind, if (slim) 24.dp else 28.dp, btnCol) { Core.toggle() }
                     CtlBtn(ButtonArt.NEXT, 22.dp, btnCol, seekDir = if (radio) 0 else 1) { if (radio) Core.nextStation() else Core.next() }
                 }
+            } else {
+                // Vừa (2 hàng) và To: đủ ⏮ ▶ ⏭ to, thanh thời gian dày có giờ hai đầu
+                val large = mini == "large"
+                val disc = if (large) 76.dp else 52.dp
+                Column(Modifier.fillMaxSize().padding(start = 10.dp, end = 12.dp, top = 8.dp, bottom = 6.dp)) {
+                    Row(Modifier.weight(1f).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Disc(disc, clock)
+                        Spacer(Modifier.width(10.dp))
+                        Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(title, color = st.text, fontSize = if (large) 17.sp else 15.sp, fontWeight = FontWeight.Bold, maxLines = 1, textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth().basicMarquee())
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+                                Text(if (large) listOf(sub, Core.format.value).filter { it.isNotBlank() }.joinToString("  ·  ") else sub, color = st.sub, fontSize = 12.sp, maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center, modifier = Modifier.weight(1f, fill = false))
+                                SleepBadge(st.sub)
+                            }
+                            if (large) Row(verticalAlignment = Alignment.CenterVertically) {
+                                if (radio) CtlBtn(recKind, 34.dp, btnCol) { toggleRec() } else CtlBtn(ButtonArt.PREV, 30.dp, btnCol, seekDir = -1) { Core.prev() }
+                                Spacer(Modifier.width(8.dp)); CtlBtn(playKind, 40.dp, btnCol) { Core.toggle() }; Spacer(Modifier.width(8.dp))
+                                CtlBtn(ButtonArt.NEXT, 30.dp, btnCol, seekDir = if (radio) 0 else 1) { if (radio) Core.nextStation() else Core.next() }
+                            }
+                        }
+                        if (!large) {
+                            if (radio) CtlBtn(recKind, 28.dp, btnCol) { toggleRec() } else CtlBtn(ButtonArt.PREV, 24.dp, btnCol, seekDir = -1) { Core.prev() }
+                            CtlBtn(playKind, 32.dp, btnCol) { Core.toggle() }
+                            CtlBtn(ButtonArt.NEXT, 24.dp, btnCol, seekDir = if (radio) 0 else 1) { if (radio) Core.nextStation() else Core.next() }
+                        }
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(fmtTime(Core.position.longValue), color = st.sub, fontSize = 11.sp)
+                        TimeBar(Modifier.weight(1f).padding(horizontal = 6.dp), if (large) 8.dp else 6.dp, if (large) 9.dp else 7.dp)
+                        Text(if (radio) "LIVE" else fmtTime(Core.duration.longValue), color = st.sub, fontSize = 11.sp)
+                    }
+                }
             }
         }
-        if (edgeHere) EdgeLight(Modifier.fillMaxSize(), radius)
+        if (edgeHere) EdgeLight(Modifier.fillMaxSize().clip(shape), radius)
         if (toast.isNotBlank()) Box(Modifier.align(Alignment.TopCenter).padding(top = 2.dp).clip(RoundedCornerShape(10.dp)).background(Color(0xCC000000))
             .padding(horizontal = 10.dp, vertical = 3.dp)) { Text(toast, color = Color.White, fontSize = 12.sp, maxLines = 1) }
     }

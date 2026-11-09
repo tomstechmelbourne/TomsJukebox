@@ -51,6 +51,19 @@ object Prefs {
     val btnColour = p("btn_colour", "white")
     val btnCustom = p("btn_custom", 0xFFFFFFFF.toInt())
     val btnScale = p("btn_scale", 1.0f)
+    val pack = p("pack", -1)                      // Bộ Chủ Đề đang chọn (-1 = chưa chọn)
+    val favStyles = p("fav_styles", "")           // "picker|id" mỗi dòng
+    val recentStyles = p("recent_styles", "")
+    val miniSize = p("mini_size", "medium")       // viên thuốc dưới: small / medium / large
+    val navFx = p("nav_fx", "glow")               // hiệu ứng thanh điều hướng, nhiều kiểu cách nhau dấu phẩy
+    val navHaptic = p("nav_haptic", true)
+    val fxSpeed = p("fx_speed", 1.0f)
+    val splashStyle = p("splash_style", 0)        // 0 Icon Nở Ra .. 4 Theo Màu Ảnh Bìa, 5 Ngẫu Nhiên
+    val splashOn = p("splash_on", true)
+    val splashFast = p("splash_fast", false)
+    val splashHaptic = p("splash_haptic", true)
+    val chipsAutoHide = p("chips_auto_hide", true)
+    val libChip = p("lib_chip", 0)
     // visualisations
     val viz = p("viz", 0)
     val vizAuto = p("viz_auto", false)
@@ -59,6 +72,7 @@ object Prefs {
     val vizStrip = p("viz_strip", true)
     val vizNav = p("viz_nav", true)
     val realViz = p("real_viz", false)
+    val vizSpeed = p("viz_speed", 1.0f)
     // edge lighting
     val edgeOn = p("edge_on", true)
     val edgeEffect = p("edge_effect", 0)
@@ -91,6 +105,16 @@ object Prefs {
     val swipePill = p("swipe_pill", true)
     val autoPlayHeadset = p("autoplay_headset", false)
     val customLock = p("custom_lock", false)
+    val lockY = p("lock_y", -1f)                  // vị trí viên thuốc màn hình khoá (0..1, -1 = dưới cùng)
+    val lockX = p("lock_x", 0.5f)
+    val lockYLand = p("lock_y_land", -1f)
+    val lockXLand = p("lock_x_land", 0.5f)
+    val lockLocked = p("lock_locked", false)
+    val lockSnap = p("lock_snap", true)
+    val lockSize = p("lock_size", "medium")
+    val lockAlpha = p("lock_alpha", 1.0f)
+    val widgetBg = p("widget_bg", "skin")         // skin / cover / clear / frost / you
+    val widgetAlpha = p("widget_alpha", 0.85f)
     val batterySaver = p("battery_saver", true)
     val spinBeat = p("spin_beat", true)
     val blurBg = p("blur_bg", true)
@@ -105,6 +129,16 @@ object Prefs {
     val favourites = p("favourites", "")        // uris, one per line
     val hidden = p("hidden", "")                // songs hidden from the library
     val podcasts = p("podcasts", "[]")
+    val podNotify = p("pod_notify", "")           // id kênh báo tập mới, mỗi dòng
+    val podAutoDl = p("pod_auto_dl", "")          // id kênh tự tải
+    val podKeep = p("pod_keep", 5)
+    val podSpeed = p("pod_speed", "{}")           // id -> tốc độ
+    val podSkip = p("pod_skip", "{}")             // id -> giây bỏ qua đầu
+    val podHidden = p("pod_hidden", "")
+    val podPlayed = p("pod_played", "")           // url tập đã nghe
+    val podSeen = p("pod_seen", "{}")             // feed -> tập mới nhất đã thấy
+    val podNew = p("pod_new", "")                 // feed có tập mới chưa mở (chấm đỏ trên widget)
+    val radioFavs = p("radio_favs", "")           // tên đài yêu thích, mỗi dòng
     val playlists = p("playlists", "{}")
     val lastQueue = p("last_queue", "[]")
     val lastIndex = p("last_index", 0)

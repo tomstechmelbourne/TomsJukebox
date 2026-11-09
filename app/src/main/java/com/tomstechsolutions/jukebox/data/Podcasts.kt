@@ -8,7 +8,11 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.xmlpull.v1.XmlPullParser
 
+data class ChannelInfo(val description: String, val link: String, val language: String, val count: Int)
+
 object Podcasts {
+    val info = java.util.concurrent.ConcurrentHashMap<String, ChannelInfo>()
+
     suspend fun search(term: String): List<Podcast> = withContext(Dispatchers.IO) {
         val o = JSONObject(Net.get("https://itunes.apple.com/search?media=podcast&limit=40&term=${Net.enc(term)}"))
         val arr = o.optJSONArray("results") ?: JSONArray()
@@ -50,6 +54,7 @@ object Podcasts {
         val out = ArrayList<Episode>()
         var inItem = false
         var title = ""; var url = ""; var date = ""; var dur = 0L; var desc = ""; var img = ""
+        var cDesc = ""; var cLink = ""; var cLang = ""
         var ev = parser.eventType
         while (ev != XmlPullParser.END_DOCUMENT && out.size < 300) {
             when (ev) {
@@ -60,6 +65,9 @@ object Podcasts {
                     "pubDate" -> if (inItem) date = parser.nextText().trim().take(16)
                     "itunes:duration" -> if (inItem) dur = parseDur(parser.nextText())
                     "description" -> if (inItem) desc = parser.nextText().replace(Regex("<[^>]+>"), "").trim().take(400)
+                                     else if (cDesc.isBlank()) cDesc = parser.nextText().replace(Regex("<[^>]+>"), "").trim().take(1500)
+                    "link" -> if (!inItem && cLink.isBlank()) cLink = try { parser.nextText().trim() } catch (_: Exception) { "" }
+                    "language" -> if (!inItem) cLang = parser.nextText().trim()
                     "itunes:image" -> if (inItem) img = parser.getAttributeValue(null, "href") ?: ""
                 }
                 XmlPullParser.END_TAG -> if (parser.name == "item") {
@@ -69,6 +77,7 @@ object Podcasts {
             }
             ev = parser.next()
         }
+        info[p.feed] = ChannelInfo(cDesc, cLink, cLang, out.size)
         out
     }
 

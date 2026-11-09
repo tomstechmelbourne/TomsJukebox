@@ -5,7 +5,7 @@ import java.net.URL
 import java.net.URLEncoder
 
 object Net {
-    const val UA = "TomsJukebox/0.9.2 (Android; Tom's Technology Solutions)"
+    const val UA = "TomsJukebox/0.9.3 (Android; Tom's Technology Solutions)"
     fun enc(s: String): String = URLEncoder.encode(s, "UTF-8")
 
     fun get(url: String, timeout: Int = 10000): String {

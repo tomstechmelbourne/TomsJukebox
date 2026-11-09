@@ -15,8 +15,8 @@ android {
         applicationId = "com.tomstechsolutions.jukebox"
         minSdk = 24
         targetSdk = tjSdk
-        versionCode = 920
-        versionName = "0.9.2-beta"
+        versionCode = 930
+        versionName = "0.9.3-beta"
         vectorDrawables { useSupportLibrary = true }
     }
 
@@ -64,4 +64,5 @@ dependencies {
     implementation("androidx.media3:media3-session:$media3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
     implementation("com.google.guava:guava:33.4.0-android")
+    implementation("androidx.work:work-runtime-ktx:2.10.1")
 }

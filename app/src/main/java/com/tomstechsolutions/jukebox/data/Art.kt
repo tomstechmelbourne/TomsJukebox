@@ -34,7 +34,7 @@ object Art {
             if (uri.startsWith("http")) {
                 val c = URL(uri).openConnection() as HttpURLConnection
                 c.connectTimeout = 8000; c.readTimeout = 8000
-                c.setRequestProperty("User-Agent", "TomsJukebox/0.9.2 (Android)")
+                c.setRequestProperty("User-Agent", "TomsJukebox/0.9.3 (Android)")
                 c.inputStream.use { bmp = decodeScaled(it.readBytes(), size) }
             } else {
                 val u = Uri.parse(uri)

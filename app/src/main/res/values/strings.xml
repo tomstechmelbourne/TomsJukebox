@@ -3,4 +3,8 @@
     <string name="widget_small">Tom\'s Jukebox – Pill</string>
     <string name="widget_medium">Tom\'s Jukebox – Medium</string>
     <string name="widget_large">Tom\'s Jukebox – Large</string>
+    <string name="widget_radio">Tom\'s Jukebox – Radio</string>
+    <string name="widget_podcast">Tom\'s Jukebox – Podcast</string>
+    <string name="widget_sleep">Tom\'s Jukebox – Sleep Timer</string>
+    <string name="widget_cover">Tom\'s Jukebox – Album Cover</string>
 </resources>

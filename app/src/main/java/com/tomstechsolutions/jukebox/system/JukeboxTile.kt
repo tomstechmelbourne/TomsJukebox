@@ -15,7 +15,7 @@ class JukeboxTile : TileService() {
     override fun onClick() {
         val svc = Core.service
         if (svc != null) { if (svc.player.isPlaying) svc.player.pause() else { svc.player.prepare(); svc.player.play() } }
-        else try { Widgets.button(this, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE).send() } catch (_: Exception) { }
+        else try { Widgets.mediaButton(this, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE).send() } catch (_: Exception) { }
         refresh()
     }
 

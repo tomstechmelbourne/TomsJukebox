@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -17,6 +18,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.height
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -73,7 +76,16 @@ fun SearchBox(value: String, hint: String, th: JTheme, onChange: (String) -> Uni
 fun LibraryScreen(act: MainActivity, th: JTheme) {
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
-    var view by rememberSaveable { mutableIntStateOf(0) }
+    var view by rememberSaveable { mutableIntStateOf(Prefs.libChip.value.coerceIn(0, 7)) }
+    val chipsShown = remember { mutableStateOf(true) }
+    val nested = remember { object : androidx.compose.ui.input.nestedscroll.NestedScrollConnection {
+        override fun onPreScroll(available: androidx.compose.ui.geometry.Offset, source: androidx.compose.ui.input.nestedscroll.NestedScrollSource): androidx.compose.ui.geometry.Offset {
+            if (Prefs.chipsAutoHide.value) { if (available.y < -6f) chipsShown.value = false else if (available.y > 6f) chipsShown.value = true }
+            return androidx.compose.ui.geometry.Offset.Zero
+        }
+    } }
+    val chipState = androidx.compose.foundation.lazy.rememberLazyListState()
+    androidx.compose.runtime.LaunchedEffect(Unit) { chipState.scrollToItem((view - 1).coerceAtLeast(0)) }
     var query by rememberSaveable { mutableStateOf("") }
     var group by rememberSaveable { mutableStateOf<String?>(null) }
     val addFiles = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
@@ -106,16 +118,25 @@ fun LibraryScreen(act: MainActivity, th: JTheme) {
         SearchBox(query, t("Search songs, artists, albums", "Tìm bài hát, ca sĩ, album"), th) { query = it }
         val tabs = listOf(t("Songs", "Bài Hát"), "Album", t("Artists", "Nghệ Sĩ"), t("Folders", "Thư Mục"), t("Playlists", "Danh Sách"),
             t("Favourites", "Yêu Thích"), t("Now Playing", "Đang Phát"), "● " + t("Recordings", "Bản Thâu Âm"))
-        Row(Modifier.horizontalScroll(rememberScrollState())) { tabs.forEachIndexed { i, s -> Chip(s, view == i, th) { view = i; group = null } } }
+        AnimatedVisibility(chipsShown.value || !Prefs.chipsAutoHide.value) { Column {
+        // một hàng ngang duy nhất, vuốt ngang để xem thêm
+        Box(Modifier.padding(bottom = 6.dp)) {
+            androidx.compose.foundation.lazy.LazyRow(state = chipState) {
+                itemsIndexed(tabs) { i, s -> SmallChip(s, view == i, th) { view = i; group = null; Prefs.libChip.value = i } }
+                item { Spacer(Modifier.width(24.dp)) }
+            }
+            Box(Modifier.align(Alignment.CenterEnd).width(28.dp).height(32.dp).background(androidx.compose.ui.graphics.Brush.horizontalGradient(listOf(androidx.compose.ui.graphics.Color.Transparent, th.top))))
+        }
         Row(Modifier.horizontalScroll(rememberScrollState())) {
             Btn(t("+ Add Songs…", "+ Thêm Bài Hát…"), th) { addFiles.launch(arrayOf("audio/*")) }
             Btn(t("+ Add Folder…", "+ Thêm Thư Mục…"), th) { addFolder.launch(null) }
             Btn(if (Library.scanning.value) t("Scanning…", "Đang Quét…") else t("⟳ Rescan", "⟳ Quét Lại"), th) { scope.launch { Library.scan(ctx) } }
         }
+        } }
         val all = Library.tracks.value
         val q = query.trim().lowercase()
         fun match(t: Track) = q.isEmpty() || t.title.lowercase().contains(q) || t.artist.lowercase().contains(q) || t.album.lowercase().contains(q)
-        Box(Modifier.weight(1f)) {
+        Box(Modifier.weight(1f).nestedScroll(nested)) {
             when {
                 view == 7 -> RecordingsScreen(act, th) { view = 0 }
                 view == 6 -> QueueView(th.copy(), Modifier.fillMaxSize())

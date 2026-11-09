@@ -70,7 +70,8 @@ class PlaybackService : MediaSessionService() {
             override fun onPlaybackStateChanged(state: Int) { if (state == Player.STATE_ENDED) sleep.onEnded(); updateWidgets() }
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 updateWidgets()
-                if (!isPlaying) Core.saveQueue()
+                main.removeCallbacks(widgetTick); if (isPlaying) main.postDelayed(widgetTick, 20_000)
+                if (!isPlaying) { Core.saveQueue(); Core.savePodPos() }
                 setShake(isPlaying && Prefs.shakeSkip.value)
             }
             override fun onMediaMetadataChanged(mediaMetadata: androidx.media3.common.MediaMetadata) { updateWidgets() }
@@ -78,7 +79,7 @@ class PlaybackService : MediaSessionService() {
         eq.attach(player.audioSessionId)
         viz.attach(player.audioSessionId)
 
-        val open = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
+        val open = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP).putExtra("open_now", true),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         session = MediaSession.Builder(this, player).setSessionActivity(open).setCallback(Callback()).build()
         Core.service = this
@@ -120,7 +121,15 @@ class PlaybackService : MediaSessionService() {
 
     private fun updateWidgets() {
         val md = player.mediaMetadata
-        Widgets.update(this, md.title?.toString() ?: "", md.artist?.toString() ?: "", player.isPlaying, md.artworkData)
+        val idx = player.currentMediaItemIndex
+        val next = (1..3).mapNotNull { k -> if (idx + k < player.mediaItemCount) player.getMediaItemAt(idx + k).mediaMetadata.title?.toString() else null }
+        Widgets.update(this, com.tomstechsolutions.jukebox.system.WState(md.title?.toString() ?: "", md.artist?.toString() ?: "", player.isPlaying, md.artworkData,
+            player.currentPosition, if (player.duration > 0) player.duration else 0, next, player.currentMediaItem?.mediaId ?: "",
+            player.shuffleModeEnabled, player.repeatMode, md.extras?.getString("kind") ?: ""))
+    }
+
+    private val widgetTick = object : Runnable {
+        override fun run() { if (::player.isInitialized && player.isPlaying) { updateWidgets(); main.postDelayed(this, 20_000) } }
     }
 
     // ---------- media buttons: 1 press play/pause, 2 next, 3 previous ----------

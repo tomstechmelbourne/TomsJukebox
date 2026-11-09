@@ -91,8 +91,15 @@ fun EqScreen(act: MainActivity, th: JTheme) {
             SwitchRow(t("Little Wave On The Bottom Bar", "Sóng nhỏ trên thanh điều hướng"), th, Prefs.vizNav.value) { Prefs.vizNav.value = it }
             Visualizer(Modifier.fillMaxWidth().height(90.dp).padding(bottom = 8.dp))
         }
-        FlowRow { VizStyles.names.indices.forEach { i -> Chip(VizStyles.name(i), Prefs.viz.value == i && !Prefs.vizAuto.value, th) { Prefs.viz.value = i; Prefs.vizAuto.value = false } } }
-        SwitchRow(t("Change Automatically", "Tự Đổi Hiệu Ứng"), th, Prefs.vizAuto.value) { Prefs.vizAuto.value = it }
+        StyleRow("viz", th) { act.picker.value = it }
+        Row {
+            Btn(t("Full Screen", "Xem Toàn Màn Hình"), th, Gl.fullscreen, primary = true) { act.fullViz.value = true }
+            Btn(if (Motifs.isFav("viz", "v:${Prefs.viz.value}")) "★ " + t("Favourite", "Yêu Thích") else "☆ " + t("Add To Favourites", "Thêm Yêu Thích"), th) {
+                Motifs.toggleFav("viz", "v:${Prefs.viz.value}"); Prefs.vizSpeed.value = Prefs.vizSpeed.value }
+        }
+        Text(t("Eastern group: Vietnam, China and Tibet – tap \"Change…\" then \"Eastern\".", "Nhóm Phương Đông: Việt Nam, Trung Quốc, Tây Tạng – nhấn \"Đổi…\" rồi chọn \"Phương Đông\"."), color = th.muted, fontSize = 12.sp)
+        SliderRow(t("Effect Speed", "Tốc Độ Hiệu Ứng"), th, Prefs.vizSpeed.value, 0.25f..2.5f, label = "${(Prefs.vizSpeed.value * 100).toInt()}%") { Prefs.vizSpeed.value = it }
+        SwitchRow(t("Change Automatically", "Tự Đổi Hiệu Ứng"), th, Prefs.vizAuto.value, t("Every 20 s – only among your ★ favourites if you have any.", "Mỗi 20 giây – chỉ đổi trong các kiểu ★ yêu thích nếu có.")) { Prefs.vizAuto.value = it }
         SwitchRow(t("Follow The Real Music", "Theo Nhạc Thật"), th, Prefs.realViz.value,
             t("Android asks for the microphone permission for this; nothing is recorded.", "Android sẽ hỏi quyền micro cho việc này; không thâu gì cả.")) {
             Prefs.realViz.value = it

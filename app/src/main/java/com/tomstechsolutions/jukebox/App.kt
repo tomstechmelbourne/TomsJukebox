@@ -11,6 +11,7 @@ class App : Application() {
         Prefs.init(this)
         L.vi.value = Prefs.lang.value == "vi"
         Messages.init(this)
+        try { com.tomstechsolutions.jukebox.data.PodStore.schedule(this) } catch (_: Exception) { }
     }
 
     companion object {

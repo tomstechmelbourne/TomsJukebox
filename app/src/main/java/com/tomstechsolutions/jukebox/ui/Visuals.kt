@@ -28,8 +28,8 @@ import androidx.compose.ui.graphics.drawscope.rotate
 fun Visualizer(modifier: Modifier, styleOverride: Int? = null) {
     val clock by rememberClock()
     Canvas(modifier) {
-        val style = styleOverride ?: if (Prefs.vizAuto.value) ((clock / 20f).toInt() % VizStyles.names.size) else Prefs.viz.value
-        drawViz(style, clock, levelsAt(clock), Core.palette.value.map { Color(it) })
+        val style = styleOverride ?: if (Prefs.vizAuto.value) VizStyles.autoPick(clock) else Prefs.viz.value
+        drawViz(style, clock * VizStyles.speed(), levelsAt(clock), Core.palette.value.map { Color(it) })
     }
 }
 
@@ -134,6 +134,7 @@ fun DrawScope.drawViz(style: Int, time: Float, lv: FloatArray, cols: List<Color>
             }
         }
         in 12..35 -> drawViz2(style, time, lv, cols)
+        in 36..69 -> drawViz3(style, time, lv, cols)
         else -> waves(time, lv, cols, 0.9f, soft = true)
     }
 }

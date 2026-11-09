@@ -42,12 +42,15 @@ jobs:
       - name: Check radio stations
         if: success()
         run: python3 tools/check_stations.py || true
+      - name: Check podcast names
+        run: python3 tools/check_podcasts.py || true
       - name: Save APK to the apk branch
         if: success()
         run: |
           mkdir -p out
           cp app/build/outputs/apk/release/*.apk out/TomsJukebox.apk
           cp stations_report.txt out/ 2>/dev/null || true
+          cp podcasts_report.txt out/ 2>/dev/null || true
           echo "$(cat sdk_used.txt) commit=${GITHUB_SHA}" > out/build_info.txt; cp build37.log out/ 2>/dev/null || true
           cd out && git init -q && git checkout -q -b apk && git add -A
           git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -qm "APK ${GITHUB_SHA::7}"

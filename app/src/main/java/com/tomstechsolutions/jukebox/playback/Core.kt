@@ -14,9 +14,11 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
+import com.tomstechsolutions.jukebox.App
 import com.tomstechsolutions.jukebox.Prefs
 import com.tomstechsolutions.jukebox.data.Art
 import com.tomstechsolutions.jukebox.data.Episode
+import com.tomstechsolutions.jukebox.data.PodStore
 import com.tomstechsolutions.jukebox.data.Library
 import com.tomstechsolutions.jukebox.data.Messages
 import com.tomstechsolutions.jukebox.data.RadioApi
@@ -165,6 +167,7 @@ object Core {
     fun playTracks(list: List<Track>, start: Int = 0, shuffled: Boolean = false) {
         val c = controller ?: return
         station.value = null
+        c.setPlaybackSpeed(1f)
         c.setMediaItems(list.map { item(trackQ(it)) }, start.coerceIn(0, (list.size - 1).coerceAtLeast(0)), 0L)
         c.shuffleModeEnabled = shuffled
         c.prepare(); c.play()
@@ -192,16 +195,46 @@ object Core {
                 }
             }
             val c = controller ?: return@launch
+            c.setPlaybackSpeed(1f)
             c.setMediaItem(item(QItem(s.url, s.name, if (s.country == "AU") "Radio · ${s.group}" else "Radio", s.group, "radio", 0)))
             c.prepare(); c.play()
         }
     }
 
-    fun playEpisode(e: Episode) {
+    /** Plays a podcast episode: the downloaded file if there is one, from where it stopped, at the channel's own speed. */
+    fun playEpisode(e: Episode, fromStart: Boolean = false) {
         val c = controller ?: return
         station.value = null
-        c.setMediaItem(item(QItem(e.url, e.title, e.podcast, e.podcast, "podcast", 0), e.image))
+        val start = if (fromStart) 0L else PodStore.pos(e.url).takeIf { it > 0 } ?: (PodStore.skip(e.podcast) * 1000L)
+        c.setMediaItem(episodeItem(e), start)
+        c.setPlaybackSpeed(PodStore.speed(e.podcast))
         c.prepare(); c.play()
+    }
+
+    private fun episodeItem(e: Episode): MediaItem {
+        val base = item(QItem(e.url, e.title, e.podcast, e.podcast, "podcast", 0), e.image)
+        val local = PodStore.localFile(App.ctx, e) ?: return base
+        val u = Uri.fromFile(local)
+        return base.buildUpon().setUri(u).setRequestMetadata(MediaItem.RequestMetadata.Builder().setMediaUri(u).build()).build()
+    }
+
+    fun queueEpisode(e: Episode) {
+        val c = controller ?: return
+        if (c.mediaItemCount == 0) { playEpisode(e); return }
+        c.addMediaItem(episodeItem(e))
+    }
+
+    /** Remembers where a podcast episode stopped. */
+    fun savePodPos() {
+        val c = controller ?: return
+        if (kind.value == "podcast" && uri.value.isNotBlank()) PodStore.setPos(uri.value, c.currentPosition, c.duration)
+    }
+
+    /** Runs [block] once the player connection is up (widgets, shortcuts). Gives up waiting after 5 s. */
+    fun whenReady(ctx: Context, block: () -> Unit) {
+        connect(ctx)
+        if (controller != null) { block(); return }
+        scope.launch { var n = 0; while (controller == null && n < 50) { delay(100); n++ }; block() }
     }
 
     fun toggle() { controller?.let { if (it.isPlaying) it.pause() else { if (it.playbackState == Player.STATE_IDLE) it.prepare(); it.play() } } }

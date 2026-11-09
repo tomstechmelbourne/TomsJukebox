@@ -43,6 +43,7 @@ object Themes {
     @Composable
     fun current(): JTheme {
         val key = Prefs.theme.state.value
+        Motifs.of(key)?.let { return Motifs.theme(it) }
         if (key == "custom") {
             val a = Color(Prefs.customAccent.state.value)
             return list[0].copy(key = "custom", en = "Custom Colour", vi = "Màu Tự Chọn", accent = a,
@@ -93,6 +94,7 @@ object BarColours {
 
     /** Colours to paint the bar with (one colour = solid). */
     fun colours(key: String, palette: IntArray): List<Color> = when {
+        Motifs.of(key) != null -> Motifs.list[Motifs.of(key)!!].colours.drop(1)
         key == "custom" -> listOf(Color(Prefs.customBar.value))
         key == "cover" -> palette.take(3).map { Color(it) }
         key.startsWith("grad:") -> gradients[key.removePrefix("grad:")] ?: listOf(ORANGE)
@@ -126,6 +128,25 @@ object VizStyles {
         "Beating Heart" to "Tim Đập Nhịp", "Whirlwind" to "Lốc Xoáy", "Bubbles" to "Bong Bóng", "Neon Grid 3D" to "Lưới Neon 3D",
         "Fireflies" to "Đom Đóm", "Sound Fingerprint" to "Vân Tay Âm Thanh", "Sunburst" to "Mặt Trời Toả Tia", "Butterfly" to "Cánh Bướm",
         "Night City" to "Thành Phố Đêm", "Heart Monitor" to "Điện Tâm Đồ", "Ripples" to "Sóng Tròn Đồng Tâm", "Nebula" to "Tinh Vân",
-    )
+    ) + vizNamesMore()
     fun name(i: Int) = names.getOrNull(i)?.let { t(it.first, it.second) } ?: ""
+    fun speed() = Prefs.vizSpeed.value.coerceIn(0.25f, 3f)
+    /** Auto change every 20 s: among ★ favourites if there are any, else all 70. */
+    fun autoPick(clock: Float): Int {
+        val favs = Motifs.favs("viz").mapNotNull { it.removePrefix("v:").toIntOrNull() }
+        val pool = favs.ifEmpty { names.indices.toList() }
+        return pool[(clock / 20f).toInt() % pool.size]
+    }
 }
+
+fun vizNamesMore() = listOf(
+    "Lotus On The Lake" to "Sen Nở Trên Hồ", "Hội An Lanterns" to "Đèn Lồng Hội An", "Rice Fields" to "Đồng Lúa", "Apricot Blossom Rain" to "Mưa Hoa Mai",
+    "Spinning Vinyl" to "Đĩa Than Quay", "Piano Keys" to "Phím Đàn Piano", "Jumping Drums" to "Trống Nhảy", "Running Cassette" to "Băng Cassette Chạy",
+    "Stage Lasers" to "Tia Laser Sân Khấu", "Disco Ball" to "Quả Cầu Disco", "Stage Spotlights" to "Đèn Pha Sân Khấu", "Kaleidoscope" to "Kính Vạn Hoa",
+    "Matrix Rain" to "Mưa Chữ Ma Trận", "Rotating 3D Bars" to "Cột Sóng 3D Xoay", "Spiral Galaxy" to "Thiên Hà Xoắn Ốc", "Water Drops" to "Giọt Nước Rơi",
+    "Đông Sơn Bronze Drum" to "Trống Đồng Đông Sơn", "Spinning Conical Hats" to "Nón Lá Xoay", "Hạ Long Bay" to "Vịnh Hạ Long", "Tết Peach Blossom" to "Hoa Đào Tết",
+    "Flute Kites" to "Diều Sáo", "Lion Dance" to "Múa Lân", "Yellow Flag With Three Red Stripes" to "Cờ Vàng Ba Sọc Đỏ",
+    "Dancing Dragon" to "Rồng Múa", "Ink Wash Painting" to "Tranh Thuỷ Mặc", "Red Lanterns" to "Đèn Lồng Đỏ", "Paper Fan" to "Quạt Giấy",
+    "Auspicious Clouds" to "Mây Cát Tường", "Carp Leaping The Dragon Gate" to "Cá Chép Vượt Vũ Môn",
+    "Prayer Flags In The Wind" to "Cờ Phướn Trong Gió", "Sand Mandala" to "Mandala Cát", "Singing Bowl" to "Bát Hát", "Himalayas" to "Dãy Himalaya", "Butter Lamps" to "Đèn Bơ",
+)
