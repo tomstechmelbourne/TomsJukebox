@@ -55,6 +55,8 @@ object Prefs {
     val favStyles = p("fav_styles", "")           // "picker|id" mỗi dòng
     val recentStyles = p("recent_styles", "")
     val miniSize = p("mini_size", "medium")       // viên thuốc dưới: small / medium / large
+    val cardBg = p("card_bg", "cover")      // thẻ Mặc Định: cover (Ảnh Bìa) / skin (Theo Skin) / mix (Ảnh Bìa + Skin)
+    val cardViz = p("card_viz", true)        // hiệu ứng sóng nhạc đang chọn chạy mờ sau thẻ
     val playerStyle = p("player_style", "card")   // trong app: card (Mặc Định (Tom's Tech)) / pill (Viên Thuốc)
     val lockStyle = p("lock_style", "card")       // màn hình khoá: card (Mặc Định (Tom's Tech)) / pill
     val navFx = p("nav_fx", "glow")               // hiệu ứng thanh điều hướng, nhiều kiểu cách nhau dấu phẩy

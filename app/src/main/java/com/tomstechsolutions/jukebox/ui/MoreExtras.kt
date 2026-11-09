@@ -34,6 +34,11 @@ fun MoreExtras(act: MainActivity, th: JTheme) {
         FlowRow { listOf("card" to t("Default (Tom's Tech)", "Mặc Định (Tom's Tech)"), "pill" to t("Pill", "Viên Thuốc")).forEach { (k, n) -> Chip(n, Prefs.lockStyle.value == k, th) { Prefs.lockStyle.value = k } } }
         Text(t("Default (Tom's Tech): the cover fills the card, music waves sit on the time bar, buttons in frosted circles. Swipe up on it to open Now Playing.",
             "Mặc Định (Tom's Tech): ảnh bìa làm nền thẻ, sóng nhạc nằm trên thanh thời gian, nút trong vòng kính mờ. Vuốt lên thẻ để mở Đang Phát."), color = th.muted, fontSize = 12.sp)
+        Text(t("Card background:", "Nền thẻ:"), color = th.text, fontSize = 14.sp)
+        FlowRow { listOf("cover" to t("Cover", "Ảnh Bìa"), "skin" to t("Follow Skin", "Theo Skin"), "mix" to t("Cover + Skin", "Ảnh Bìa + Skin")).forEach { (k, n) -> Chip(n, Prefs.cardBg.value == k, th) { Prefs.cardBg.value = k } } }
+        SwitchRow(t("Music Visualisation Behind The Card", "Hiệu Ứng Sóng Nhạc Chạy Sau Thẻ"), th, Prefs.cardViz.value) { Prefs.cardViz.value = it }
+        Text(t("The card also follows Button Style, Button Colour, Edge Light and the Theme Pack you choose.",
+            "Thẻ cũng theo Kiểu Nút, Màu Nút, Ánh Sáng Chạy Viền và Bộ Chủ Đề bạn chọn."), color = th.muted, fontSize = 12.sp)
         Text(t("Waves on the time bar – shape:", "Sóng nhạc trên thanh thời gian – kiểu:"), color = th.text, fontSize = 14.sp)
         FlowRow { WaveColours.shapes.forEachIndexed { i, (en, vi) -> Chip(t(en, vi), Prefs.waveShape.value == i, th) { Prefs.waveShape.value = i } } }
         Text(t("Colours:", "Màu sắc:"), color = th.text, fontSize = 14.sp)

@@ -40,6 +40,8 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -142,8 +144,9 @@ fun WaveSeekBar(modifier: Modifier = Modifier, height: Dp = 44.dp) {
 
 @Composable
 private fun GlassBtn(kind: Int, size: Dp, onClick: () -> Unit, seekDir: Int = 0) {
+    val col = buttonColour(Color.White)
     Box(Modifier.size(size).clip(CircleShape).background(Color(0x33FFFFFF)), contentAlignment = Alignment.Center) {
-        CtlBtn(kind, size * 0.5f, Color.White, seekDir) { onClick() }
+        CtlBtn(kind, size * 0.5f, col, seekDir) { onClick() }
     }
 }
 
@@ -158,7 +161,7 @@ private fun CardButtons(leftRepeat: Boolean, big: Dp) {
         GlassBtn(ButtonArt.PREV, big * 0.85f, { Core.prev() }, -1)
         GlassBtn(if (Core.playing.value) ButtonArt.PAUSE else ButtonArt.PLAY, big, { Core.toggle() })
         GlassBtn(ButtonArt.NEXT, big * 0.85f, { if (radio) Core.nextStation() else Core.next() }, if (radio) 0 else 1)
-        if (rec) CtlBtn(if (Core.recording.value) ButtonArt.REC_STOP else ButtonArt.REC, 26.dp, Color.White) { if (Core.recording.value) Core.stopRecording() else Core.startRecording() }
+        if (rec) CtlBtn(if (Core.recording.value) ButtonArt.REC_STOP else ButtonArt.REC, 26.dp, buttonColour(Color.White)) { if (Core.recording.value) Core.stopRecording() else Core.startRecording() }
         else Box(Modifier.size(34.dp).clip(CircleShape).border(2.dp, if (fav) ORANGE else Color.White, CircleShape).clickable { if (Core.uri.value.isNotBlank()) Prefs.toggleFav(Core.uri.value) }, contentAlignment = Alignment.Center) {
             Text(if (fav) "✓" else "+", color = if (fav) ORANGE else Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
         }
@@ -172,6 +175,26 @@ private fun TimesRow() {
         Text(fmtTime(Core.position.longValue), color = Color(0xFFBDBDBD), fontSize = 13.sp, modifier = Modifier.weight(1f))
         Text(if (Core.kind.value == "radio") "LIVE" else fmtTime(Core.duration.longValue), color = Color(0xFFBDBDBD), fontSize = 13.sp)
     }
+}
+
+/** Nền thẻ theo cài đặt: Ảnh Bìa, Theo Skin, hoặc Ảnh Bìa trộn Skin; thêm hiệu ứng sóng nhạc đang chọn chạy mờ phía sau. */
+@Composable
+private fun CardBackground(radius: Dp) {
+    val clock by rememberClock()
+    val bg = Prefs.cardBg.value
+    if (bg != "skin") CoverBackground(blurIt = false)
+    if (bg != "cover") Canvas(Modifier.fillMaxSize()) {
+        val a = if (bg == "mix") 0.55f else Prefs.pillAlpha.value.coerceIn(0.05f, 1f)
+        drawIntoCanvas { c -> c.saveLayer(androidx.compose.ui.geometry.Rect(Offset.Zero, size), androidx.compose.ui.graphics.Paint().apply { alpha = a }); paintSkin(clock, 0f); c.restore() }
+        drawRect(Color(0x55000000))
+    }
+    if (Prefs.cardViz.value && Prefs.vizOn.value && Prefs.vizPill.value && !Anim.lowPower.value) Visualizer(Modifier.fillMaxSize().graphicsLayer { alpha = 0.45f })
+    if (bg != "cover") Canvas(Modifier.fillMaxSize()) { paintSkinBorder(radius.toPx(), skinStyle().border) }
+}
+
+@Composable
+private fun CardEdge(shape: androidx.compose.ui.graphics.Shape, radius: Dp) {
+    if (Prefs.edgeOn.value && Prefs.edgeWhere.value != "window") EdgeLight(Modifier.fillMaxSize().clip(shape), radius)
 }
 
 @Composable
@@ -190,13 +213,14 @@ private fun CoverBackground(blurIt: Boolean) {
 fun CardPlayer(modifier: Modifier = Modifier, compact: Boolean, onOpen: () -> Unit = {}, onLong: () -> Unit = {}) {
     val ctx = LocalContext.current
     var dragY by remember { mutableFloatStateOf(0f) }
-    val shape = RoundedCornerShape(if (compact) 34.dp else 40.dp)
+    val radius = if (compact) 34.dp else 40.dp
+    val shape = RoundedCornerShape(radius)
     Box(modifier.fillMaxWidth().height(if (compact) 196.dp else 232.dp).clip(shape)
         .pointerInput(compact) {
             detectDragGestures(onDragEnd = { if (compact && dragY < -50) onOpen(); dragY = 0f }, onDragCancel = { dragY = 0f }) { ch, d -> if (abs(d.y) > abs(d.x)) { ch.consume(); dragY += d.y } }
         }
         .pointerInput(Unit) { detectTapGestures(onTap = { if (compact) onOpen() }, onLongPress = { onLong() }) }) {
-        CoverBackground(blurIt = false)
+        CardBackground(radius)
         Column(Modifier.fillMaxSize().padding(horizontal = 22.dp, vertical = if (compact) 12.dp else 16.dp), verticalArrangement = Arrangement.SpaceBetween) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(outputName(ctx), color = Color(0xFFE0E0E0), fontSize = 15.sp, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f), maxLines = 1)
@@ -214,6 +238,7 @@ fun CardPlayer(modifier: Modifier = Modifier, compact: Boolean, onOpen: () -> Un
             }
             CardButtons(leftRepeat = false, big = if (compact) 46.dp else 56.dp)
         }
+        CardEdge(shape, radius)
     }
 }
 
@@ -224,7 +249,10 @@ fun CardPlayer(modifier: Modifier = Modifier, compact: Boolean, onOpen: () -> Un
 @Composable
 fun LockCard(modifier: Modifier = Modifier) {
     val ctx = LocalContext.current
-    Column(modifier.fillMaxWidth().clip(RoundedCornerShape(30.dp)).background(Color(0x33000000)).padding(10.dp)) {
+    Box(modifier.fillMaxWidth().clip(RoundedCornerShape(30.dp))) {
+    if (Prefs.cardBg.value != "cover") CardBackground(30.dp)
+    else if (Prefs.cardViz.value && Prefs.vizOn.value && Prefs.vizPill.value && !Anim.lowPower.value) Visualizer(Modifier.matchParentSize().graphicsLayer { alpha = 0.35f })
+    Column(Modifier.fillMaxWidth().background(Color(0x33000000)).padding(10.dp)) {
         Box(Modifier.fillMaxWidth().aspectRatio(1.4f).clip(RoundedCornerShape(24.dp))) {
             val art = Core.art.value
             if (art != null) Image(art.asImageBitmap(), null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
@@ -245,6 +273,8 @@ fun LockCard(modifier: Modifier = Modifier) {
         Spacer(Modifier.height(4.dp))
         CardButtons(leftRepeat = true, big = 50.dp)
     }
+    CardEdge(RoundedCornerShape(30.dp), 30.dp)
+    }
 }
 
 
@@ -253,9 +283,10 @@ object WaveColours {
     val list = listOf(
         Triple("vivid", "Vivid", "Rực Rỡ"), Triple("cover", "From Cover", "Theo Ảnh Bìa"), Triple("sunset", "Sunset", "Hoàng Hôn"),
         Triple("ocean", "Ocean", "Đại Dương"), Triple("aurora", "Aurora", "Cực Quang"), Triple("rainbow", "Rainbow", "Cầu Vồng"),
-        Triple("candy", "Candy", "Kẹo Ngọt"), Triple("neon", "Neon", "Neon"), Triple("gold", "Gold", "Vàng Ánh Kim"), Triple("forest", "Forest", "Rừng Xanh"),
+        Triple("candy", "Candy", "Kẹo Ngọt"), Triple("neon", "Neon", "Neon"), Triple("gold", "Gold", "Vàng Ánh Kim"), Triple("forest", "Forest", "Rừng Xanh"), Triple("bar", "Time Bar Colour", "Theo Màu Thanh Thời Gian"),
     )
     fun of(k: String): List<Color> = when (k) {
+        "bar" -> BarColours.colours(Prefs.barColour.value, Core.palette.value).let { c -> if (c.size >= 2) c else listOf(c[0], c[0].copy(alpha = 0.7f)) }
         "cover" -> Core.palette.value.map { Color(it) }.let { p -> listOf(p[0], p.getOrElse(1) { p[0] }, p.getOrElse(2) { p[0] }, p.getOrElse(1) { p[0] }) }
         "sunset" -> listOf(Color(0xFFFF6E40), Color(0xFFFF4081), Color(0xFFFFAB40), Color(0xFFAA00FF))
         "ocean" -> listOf(Color(0xFF00E5FF), Color(0xFF2979FF), Color(0xFF1DE9B6), Color(0xFF3D5AFE))
