@@ -130,6 +130,7 @@ fun NowPlayingScreen(act: MainActivity, th: JTheme, embedded: Boolean, onClose: 
             if (Core.error.value.isNotBlank()) Text(Core.error.value, color = Color(0xFFFFB4A9), fontSize = 12.sp)
             if (!short && Prefs.vizOn.value && Prefs.vizStrip.value) Visualizer(Modifier.fillMaxWidth().height(46.dp).padding(vertical = 4.dp))
             if (Prefs.skin.value == "ipod") IpodWheel()
+            else if (Prefs.playerStyle.value == "card") CardPlayer(Modifier.padding(vertical = 6.dp), compact = false, onLong = { act.showSleep.value = true })
             else Pill(Modifier.padding(vertical = 6.dp), big = true, onLong = { act.showSleep.value = true })
             if (!short) PodTools()
             // extra buttons row: Danh Sách – Lời Bài Hát – Xáo Trộn – Lặp Lại – Hẹn Giờ – Chỉnh Âm – Kết Nối Thiết Bị

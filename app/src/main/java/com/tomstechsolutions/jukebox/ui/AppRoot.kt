@@ -107,7 +107,8 @@ private fun AppBody(act: MainActivity, th: JTheme) {
             Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
                 Header(act, th)
                 Box(Modifier.weight(1f)) { Tabs(act, th) }
-                Pill(Modifier.padding(horizontal = 10.dp, vertical = 6.dp), big = false, onOpen = { act.openNow.value = true }, onLong = { act.showSleep.value = true })
+                if (Prefs.playerStyle.value == "card") CardPlayer(Modifier.padding(horizontal = 10.dp, vertical = 6.dp), compact = true, onOpen = { act.openNow.value = true }, onLong = { act.showSleep.value = true })
+                else Pill(Modifier.padding(horizontal = 10.dp, vertical = 6.dp), big = false, onOpen = { act.openNow.value = true }, onLong = { act.showSleep.value = true })
                 BottomNav(act, th)
             }
         }

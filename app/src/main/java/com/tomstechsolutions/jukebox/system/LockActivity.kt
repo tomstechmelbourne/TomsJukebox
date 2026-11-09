@@ -123,9 +123,10 @@ private fun LockPill() {
     BoxWithConstraints(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
         val dens = LocalDensity.current
         val size = Prefs.lockSize.value
-        val pillH = when (size) { "small" -> 66.dp; "large" -> 150.dp; else -> 106.dp }
+        val card = Prefs.lockStyle.value == "card"
         val pillW = minOf(maxWidth - 24.dp, 460.dp)
-        val top = if (land) 16.dp else 230.dp                    // dưới đồng hồ
+        val pillH = if (card) (pillW - 20.dp) / 1.25f + 200.dp else when (size) { "small" -> 66.dp; "large" -> 150.dp; else -> 106.dp }
+        val top = if (land) 16.dp else if (Prefs.lockStyle.value == "card") 200.dp else 230.dp     // dưới đồng hồ
         val bottomGap = if (land) 40.dp else 130.dp              // vân tay + chữ "Vuốt lên"
         with(dens) {
             val minY = top.toPx(); val maxY = (maxHeight - bottomGap - pillH).toPx().coerceAtLeast(minY)
@@ -157,7 +158,8 @@ private fun LockPill() {
                         onDragCancel = { dx = 0f; dy = 0f; dragging = false },
                     ) { ch, d -> ch.consume(); dx += d.x; dy += d.y }
                 }) {
-                when (size) {
+                if (card) com.tomstechsolutions.jukebox.ui.LockCard()
+                else when (size) {
                     "large" -> Pill(Modifier, big = true, gestures = false)
                     else -> Pill(Modifier, big = false, sizeKey = size, gestures = false)
                 }

@@ -16,6 +16,16 @@ import com.tomstechsolutions.jukebox.t
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun MoreExtras(act: MainActivity, th: JTheme) {
+    SectionTitle(t("Player Style", "Kiểu Thanh Phát Nhạc"), th)
+    Card(th) {
+        Text(t("In the app", "Trong app"), color = th.text, fontSize = 14.sp)
+        FlowRow { listOf("card" to t("Album Cover Card", "Thẻ Ảnh Bìa"), "pill" to t("Pill", "Viên Thuốc")).forEach { (k, n) -> Chip(n, Prefs.playerStyle.value == k, th) { Prefs.playerStyle.value = k } } }
+        Text(t("Lock screen", "Màn hình khoá"), color = th.text, fontSize = 14.sp)
+        FlowRow { listOf("card" to t("Big Album Cover", "Ảnh Bìa Lớn"), "pill" to t("Pill", "Viên Thuốc")).forEach { (k, n) -> Chip(n, Prefs.lockStyle.value == k, th) { Prefs.lockStyle.value = k } } }
+        Text(t("Album Cover Card: the cover fills the card, music waves sit on the time bar, buttons in frosted circles. Swipe up on it to open Now Playing.",
+            "Thẻ Ảnh Bìa: ảnh bìa làm nền thẻ, sóng nhạc nằm trên thanh thời gian, nút trong vòng kính mờ. Vuốt lên thẻ để mở Đang Phát."), color = th.muted, fontSize = 12.sp)
+    }
+
     SectionTitle(t("Bottom Pill", "Viên Thuốc Dưới"), th)
     Card(th) {
         FlowRow { listOf("small" to t("Compact", "Gọn"), "medium" to t("Medium", "Vừa"), "large" to t("Large", "To")).forEach { (k, n) -> Chip(n, Prefs.miniSize.value == k, th) { Prefs.miniSize.value = k } } }
