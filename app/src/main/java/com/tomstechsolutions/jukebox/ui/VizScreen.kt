@@ -49,7 +49,7 @@ fun FullViz(onClose: () -> Unit) {
     var drag by remember { mutableFloatStateOf(0f) }
     LaunchedEffect(touched) { delay(3500); shown = false }
     val n = VizStyles.names.size
-    fun step(d: Int) { Prefs.viz.value = ((Prefs.viz.value + d) % n + n) % n; Prefs.vizAuto.value = false; touched = System.currentTimeMillis(); shown = true }
+    fun step(d: Int) { var v = ((Prefs.viz.value + d) % n + n) % n; if (v in VizStyles.removed) v = ((v + d) % n + n) % n; Prefs.viz.value = v; Prefs.vizAuto.value = false; touched = System.currentTimeMillis(); shown = true }
     Box(Modifier.fillMaxSize().background(Color.Black)
         .pointerInput(Unit) { detectTapGestures { shown = !shown; touched = System.currentTimeMillis() } }
         .pointerInput(Unit) { detectHorizontalDragGestures(onDragEnd = { if (drag < -80) step(1) else if (drag > 80) step(-1); drag = 0f }) { _, dx -> drag += dx } }) {

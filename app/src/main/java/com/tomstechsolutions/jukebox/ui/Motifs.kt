@@ -7,7 +7,7 @@ import com.tomstechsolutions.jukebox.t
 /**
  * The 70 shared themes ("chủ đề"). Each one has the same name as a visualisation and gives a colour theme,
  * a skin, a button set, a button colour, an edge light and a time-bar colour that belong together.
- * pattern: 0 waves 1 dots 2 stripes 3 rings 4 stars 5 petals 6 grid 7 swirl 8 flag 9 grain 10 mountains 11 rays
+ * pattern: 0 waves 1 dots 2 stripes 3 rings 4 stars 5 petals 6 grid 7 swirl 9 grain 10 mountains 11 rays
  */
 data class Motif(val c: List<Long>, val pattern: Int, val btn: Int, val edge: Int, val light: Boolean = false) {
     val colours: List<Color> get() = c.map { Color(it) }
@@ -77,7 +77,7 @@ object Motifs {
         m(0xFFFCE4EC, 0xFFE8538A, 0xFFF8A5C2, 0xFF4E342E, 5, 12, 27, light = true),   // 55 Hoa Đào Tết
         m(0xFF1E4A7A, 0xFFFFB300, 0xFFE53935, 0xFF64B5F6, 2, 5, 15),     // 56 Diều Sáo
         m(0xFF4A0A0A, 0xFFFFD54F, 0xFFE53935, 0xFF43A047, 1, 2, 27),     // 57 Múa Lân
-        m(0xFFFFDA00, 0xFFDA251D, 0xFFFFDA00, 0xFF8B1A12, 8, 2, 5, light = true),     // 58 Cờ Vàng Ba Sọc Đỏ
+        m(0xFF1E4A63, 0xFFFBB040, 0xFF48B0C8, 0xFF7EE3C1, 0, 0, 0),      // 58 (đã bỏ – giữ chỗ)
         m(0xFF3A0A0A, 0xFFFFC107, 0xFFD32F2F, 0xFFFF8F00, 7, 8, 10),     // 59 Rồng Múa
         m(0xFFF5F0E1, 0xFF263238, 0xFFC62828, 0xFF607D8B, 10, 10, 3, light = true),   // 60 Tranh Thuỷ Mặc
         m(0xFF3A0808, 0xFFFF5252, 0xFFFFC107, 0xFFD50000, 1, 2, 27),     // 61 Đèn Lồng Đỏ
@@ -99,11 +99,12 @@ object Motifs {
     private val music = setOf(14, 15, 40, 41, 42, 43, 67)
     private val modern = setOf(1, 2, 3, 4, 6, 8, 9, 10, 13, 18, 23, 27, 29, 33, 47, 48, 49)
     private val classic = setOf(0, 5, 14, 15, 24, 40, 43)
-    val vn = (36..39).toSet() + (52..58)
+    val vn = (36..39).toSet() + (52..57)
     val cn = (59..64).toSet()
     val tibet = (65..69).toSet()
 
     fun groups(i: Int): Set<String> = buildSet {
+        if (i >= 70) { add("modern"); add("stage"); add("colour"); return@buildSet }
         if (i in nature) add("nature"); if (i in stage) add("stage"); if (i in music) add("music")
         if (i in modern) add("modern"); if (i in classic) add("classic")
         if (i in vn) { add("vn"); add("east") }; if (i in cn) { add("cn"); add("east") }; if (i in tibet) { add("tibet"); add("east") }
@@ -112,7 +113,7 @@ object Motifs {
     val filters = listOf(
         "all" to ("All" to "Tất Cả"), "fav" to ("★ Favourites" to "★ Yêu Thích"), "recent" to ("Recent" to "Gần Đây"), "basic" to ("Basic" to "Cơ Bản"),
         "east" to ("Eastern" to "Phương Đông"), "vn" to ("Vietnam" to "Việt Nam"), "cn" to ("China" to "Trung Quốc"), "tibet" to ("Tibet" to "Tây Tạng"),
-        "nature" to ("Nature" to "Thiên Nhiên"), "stage" to ("Stage" to "Sân Khấu"), "music" to ("Music" to "Âm Nhạc"), "modern" to ("Modern" to "Hiện Đại"), "classic" to ("Classic" to "Cổ Điển"),
+        "nature" to ("Nature" to "Thiên Nhiên"), "stage" to ("Stage" to "Sân Khấu"), "music" to ("Music" to "Âm Nhạc"), "modern" to ("Modern" to "Hiện Đại"), "colour" to ("Multicolour" to "Nhiều Màu"), "classic" to ("Classic" to "Cổ Điển"),
     )
 
     // ---- which theme a setting points at ----

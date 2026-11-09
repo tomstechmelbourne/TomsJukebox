@@ -73,7 +73,7 @@ object Pickers {
         "bar" -> t("Time Bar Colour", "Màu Thanh Thời Gian"); else -> t("Visualisation", "Hiệu Ứng Sóng Nhạc")
     }
     private val basic = setOf("basic")
-    private fun motifs() = Motifs.list.indices.map { PickItem("m:$it", Motifs.name(it), Motifs.groups(it)) }
+    private fun motifs() = Motifs.list.indices.filter { it !in VizStyles.removed }.map { PickItem("m:$it", Motifs.name(it), Motifs.groups(it)) }
 
     fun items(cat: String): List<PickItem> = when (cat) {
         "pack" -> motifs()
@@ -84,7 +84,7 @@ object Pickers {
             .map { PickItem(it.first, it.second, basic) } + motifs()
         "edge" -> EdgeEffects.names.indices.map { PickItem("e:$it", EdgeEffects.name(it), basic) } + motifs()
         "bar" -> BarColours.list.map { PickItem(it.third, t(it.first, it.second), basic) } + PickItem("custom", t("Custom Colour", "Tự Chọn Màu"), basic) + motifs()
-        else -> VizStyles.names.indices.map { PickItem("v:$it", VizStyles.name(it), Motifs.groups(it) + (if (it < 36) basic else emptySet())) }
+        else -> VizStyles.names.indices.filter { it !in VizStyles.removed }.map { PickItem("v:$it", VizStyles.name(it), Motifs.groups(it) + (if (it < 36) basic else emptySet())) }
     }
 
     fun current(cat: String): String = when (cat) {

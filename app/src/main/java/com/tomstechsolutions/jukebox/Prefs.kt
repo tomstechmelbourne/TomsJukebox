@@ -141,7 +141,9 @@ object Prefs {
     val podSeen = p("pod_seen", "{}")             // feed -> tập mới nhất đã thấy
     val podNew = p("pod_new", "")                 // feed có tập mới chưa mở (chấm đỏ trên widget)
     val radioFavs = p("radio_favs", "")
-    val podHQ = p("pod_hq", true)                 // tải bản chất lượng cao nhất kênh có
+    val podHQ = p("pod_hq", true)
+    val waveCols = p("wave_cols", "vivid")        // màu sóng trên thanh thời gian (giao diện Mặc Định)
+    val waveShape = p("wave_shape", 0)            // 0 đồi mềm · 1 dải lụa · 2 đối xứng phát sáng · 3 cột bo tròn                 // tải bản chất lượng cao nhất kênh có
     val podAutoSave = p("pod_auto_save", "")      // ⏰ kênh tự lưu tập mới vào Bản Thâu Âm
     val podSavedUrls = p("pod_saved_urls", "")           // tên đài yêu thích, mỗi dòng
     val playlists = p("playlists", "{}")

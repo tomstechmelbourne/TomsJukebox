@@ -20,7 +20,7 @@ import kotlin.math.sin
 
 private const val TAU = (2 * PI).toFloat()
 
-/** The 34 visualisations added in 0.9.3: 16 new (36–51) and 18 Eastern ones (52–69). */
+/** The 34 visualisations added in 0.9.3: 16 new (36–51) and Eastern ones (52–69). */
 fun DrawScope.drawViz3(style: Int, time: Float, lv: FloatArray, cols: List<Color>) {
     val w = size.width; val h = size.height; val n = lv.size
     val avg = lv.average().toFloat()
@@ -224,7 +224,6 @@ fun DrawScope.drawViz3(style: Int, time: Float, lv: FloatArray, cols: List<Color
             val jaw = s * (0.05f + bass * 0.2f); drawRoundRect(Color(0xFFFFF59D), Offset(c.x - s * 0.4f, c.y + s * 0.2f + jaw), Size(s * 0.8f, s * 0.14f), CornerRadius(8f))
             for (k in 0 until 10) { val a = k * TAU / 10 + time; drawCircle(Color(0xFFFFEB3B).copy(alpha = treb), 3f, c + Offset(cos(a), sin(a)) * s * 0.9f) }
         }
-        58 -> drawYellowFlag(time, lv, bass)                                    // Cờ Vàng Ba Sọc Đỏ
 
         // ───────────── Phương Đông – Trung Quốc ─────────────
         59 -> {                                                                 // Rồng Múa
@@ -328,34 +327,4 @@ fun DrawScope.drawViz3(style: Int, time: Float, lv: FloatArray, cols: List<Color
             drawPath(fl, Brush.verticalGradient(listOf(Color(0xFFFFF59D), Color(0xFFFF6F00)), base - fh * 1.6f, base))
         }
     }
-}
-
-/**
- * Cờ Vàng Ba Sọc Đỏ: tỉ lệ 2:3, nền vàng, ba sọc đỏ nằm ngang ở giữa;
- * mỗi sọc và mỗi khoảng cách bằng 1/15 chiều cao cờ. Cờ bay trong gió theo nhịp nhạc.
- */
-fun DrawScope.drawYellowFlag(time: Float, lv: FloatArray, bass: Float) {
-    val w = size.width; val h = size.height
-    val fh = min(h * 0.72f, w * 0.75f * 2f / 3f); val fw = fh * 1.5f
-    val left = (w - fw) / 2 + 6f; val top = (h - fh) / 2
-    drawLine(Color(0xFF8D8D8D), Offset(left - 4, top - 10), Offset(left - 4, h), 5f, StrokeCap.Round)
-    drawCircle(Color(0xFFFFD54F), 6f, Offset(left - 4, top - 12))
-    val yellow = Color(0xFFFFDA00); val red = Color(0xFFDA251D)
-    val slices = 48; val sw = fw / slices
-    val amp = fh * (0.03f + bass * 0.07f)
-    for (i in 0 until slices) {
-        val fx = i / slices.toFloat()
-        val ph = fx * 7f - time * (3f + bass * 3f)
-        val off = sin(ph) * amp * fx
-        val shade = 0.82f + 0.18f * cos(ph)
-        val x = left + i * sw
-        val y0 = top + off
-        drawRect(yellow.darken(shade), Offset(x, y0), Size(sw + 1f, fh))
-        for (s in 0 until 3) {
-            val sy = y0 + fh * (5 + s * 2) / 15f
-            drawRect(red.darken(shade), Offset(x, sy), Size(sw + 1f, fh / 15f))
-        }
-    }
-    val glow = lv.take(6).average().toFloat()
-    drawRect(Color.White.copy(alpha = glow * 0.12f), Offset(left, top), Size(fw, fh))
 }

@@ -23,12 +23,6 @@ fun motifSkinStyle(i: Int): SkinStyle {
 /** Paints a theme skin: the theme's colours plus its pattern. */
 fun DrawScope.paintMotifSkin(i: Int, clock: Float) {
     val mo = Motifs.list[i]; val c = mo.colours; val w = size.width; val h = size.height
-    if (mo.pattern == 8) {                                          // Cờ Vàng Ba Sọc Đỏ: nền vàng, ba sọc đỏ ở giữa
-        drawRect(Color(0xFFFFDA00))
-        for (s in 0 until 3) drawRect(Color(0xFFDA251D).copy(alpha = 0.85f), Offset(0f, h * (5 + s * 2) / 15f), Size(w, h / 15f))
-        drawRect(Brush.verticalGradient(listOf(Color(0x40FFFFFF), Color.Transparent), 0f, h * 0.4f))
-        return
-    }
     if (mo.light) drawRect(Brush.verticalGradient(listOf(c[0], c[0].darken(0.92f))))
     else drawRect(Brush.linearGradient(listOf(c[0].darken(0.95f), c[0].darken(0.55f), c[0].darken(0.8f)), Offset.Zero, Offset(w, h)))
     val ink = if (mo.light) c[1].copy(alpha = 0.18f) else c[1].copy(alpha = 0.22f)

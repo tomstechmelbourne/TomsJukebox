@@ -131,10 +131,12 @@ object VizStyles {
     ) + vizNamesMore()
     fun name(i: Int) = names.getOrNull(i)?.let { t(it.first, it.second) } ?: ""
     fun speed() = Prefs.vizSpeed.value.coerceIn(0.25f, 3f)
+    /** Kiểu đã bỏ theo yêu cầu (giữ chỗ để số thứ tự các kiểu khác không đổi). */
+    val removed = setOf(58)
     /** Auto change every 20 s: among ★ favourites if there are any, else all 70. */
     fun autoPick(clock: Float): Int {
         val favs = Motifs.favs("viz").mapNotNull { it.removePrefix("v:").toIntOrNull() }
-        val pool = favs.ifEmpty { names.indices.toList() }
+        val pool = favs.filter { it !in removed }.ifEmpty { names.indices.filter { it !in removed } }
         return pool[(clock / 20f).toInt() % pool.size]
     }
 }
@@ -145,8 +147,11 @@ fun vizNamesMore() = listOf(
     "Stage Lasers" to "Tia Laser Sân Khấu", "Disco Ball" to "Quả Cầu Disco", "Stage Spotlights" to "Đèn Pha Sân Khấu", "Kaleidoscope" to "Kính Vạn Hoa",
     "Matrix Rain" to "Mưa Chữ Ma Trận", "Rotating 3D Bars" to "Cột Sóng 3D Xoay", "Spiral Galaxy" to "Thiên Hà Xoắn Ốc", "Water Drops" to "Giọt Nước Rơi",
     "Đông Sơn Bronze Drum" to "Trống Đồng Đông Sơn", "Spinning Conical Hats" to "Nón Lá Xoay", "Hạ Long Bay" to "Vịnh Hạ Long", "Tết Peach Blossom" to "Hoa Đào Tết",
-    "Flute Kites" to "Diều Sáo", "Lion Dance" to "Múa Lân", "Yellow Flag With Three Red Stripes" to "Cờ Vàng Ba Sọc Đỏ",
+    "Flute Kites" to "Diều Sáo", "Lion Dance" to "Múa Lân", "(removed)" to "(đã bỏ)",
     "Dancing Dragon" to "Rồng Múa", "Ink Wash Painting" to "Tranh Thuỷ Mặc", "Red Lanterns" to "Đèn Lồng Đỏ", "Paper Fan" to "Quạt Giấy",
     "Auspicious Clouds" to "Mây Cát Tường", "Carp Leaping The Dragon Gate" to "Cá Chép Vượt Vũ Môn",
     "Prayer Flags In The Wind" to "Cờ Phướn Trong Gió", "Sand Mandala" to "Mandala Cát", "Singing Bowl" to "Bát Hát", "Himalayas" to "Dãy Himalaya", "Butter Lamps" to "Đèn Bơ",
+    // 70–75: sóng nhạc nhiều màu
+    "Multicolour Silk Waves" to "Sóng Lụa Đa Sắc", "Soft Aurora" to "Cực Quang Mềm", "Glowing Mirror Wave" to "Sóng Đối Xứng Phát Sáng",
+    "Rounded Colour Bars" to "Cột Bo Tròn Đa Sắc", "Bouncing Colour Drops" to "Giọt Màu Nhảy", "Neon Streams" to "Dòng Chảy Neon",
 )

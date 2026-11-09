@@ -24,6 +24,10 @@ fun MoreExtras(act: MainActivity, th: JTheme) {
         FlowRow { listOf("card" to t("Default (Tom's Tech)", "Mặc Định (Tom's Tech)"), "pill" to t("Pill", "Viên Thuốc")).forEach { (k, n) -> Chip(n, Prefs.lockStyle.value == k, th) { Prefs.lockStyle.value = k } } }
         Text(t("Default (Tom's Tech): the cover fills the card, music waves sit on the time bar, buttons in frosted circles. Swipe up on it to open Now Playing.",
             "Mặc Định (Tom's Tech): ảnh bìa làm nền thẻ, sóng nhạc nằm trên thanh thời gian, nút trong vòng kính mờ. Vuốt lên thẻ để mở Đang Phát."), color = th.muted, fontSize = 12.sp)
+        Text(t("Waves on the time bar – shape:", "Sóng nhạc trên thanh thời gian – kiểu:"), color = th.text, fontSize = 14.sp)
+        FlowRow { WaveColours.shapes.forEachIndexed { i, (en, vi) -> Chip(t(en, vi), Prefs.waveShape.value == i, th) { Prefs.waveShape.value = i } } }
+        Text(t("Colours:", "Màu sắc:"), color = th.text, fontSize = 14.sp)
+        FlowRow { WaveColours.list.forEach { (k, en, vi) -> Chip(t(en, vi), Prefs.waveCols.value == k, th) { Prefs.waveCols.value = k } } }
     }
 
     SectionTitle(t("Bottom Pill", "Viên Thuốc Dưới"), th)

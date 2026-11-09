@@ -135,6 +135,7 @@ fun DrawScope.drawViz(style: Int, time: Float, lv: FloatArray, cols: List<Color>
         }
         in 12..35 -> drawViz2(style, time, lv, cols)
         in 36..69 -> drawViz3(style, time, lv, cols)
+        in 70..79 -> drawViz4(style, time, lv, cols)
         else -> waves(time, lv, cols, 0.9f, soft = true)
     }
 }

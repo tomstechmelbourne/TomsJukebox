@@ -38,8 +38,8 @@ adb shell am start -n $M --es open_picker pack; sleep 4; adb exec-out screencap 
 adb shell input keyevent 4; sleep 2
 adb shell am start -n $M --es open_picker viz; sleep 4; adb exec-out screencap -p > shots/api${API}_picker_viz.png
 adb shell input keyevent 4; sleep 2
-adb shell am start -n $M --ei apply_pack 58 --es open_tab 0; sleep 4; adb exec-out screencap -p > shots/api${API}_pack58.png
-adb shell am start -n $M --ei set_viz 58 --ez full_viz true; sleep 4; adb exec-out screencap -p > shots/api${API}_flag.png
+adb shell am start -n $M --ei apply_pack 55 --es open_tab 0; sleep 4; adb exec-out screencap -p > shots/api${API}_pack55.png
+adb shell am start -n $M --ei set_viz 70 --ez full_viz true; sleep 4; adb exec-out screencap -p > shots/api${API}_viz70.png
 adb shell input keyevent 4; sleep 2
 adb shell am start -n $M --ei apply_pack 52 --es open_tab 2; sleep 12; adb exec-out screencap -p > shots/api${API}_podcast.png
 adb shell am start -n $M --es open_tab 4; sleep 3; adb exec-out screencap -p > shots/api${API}_more.png

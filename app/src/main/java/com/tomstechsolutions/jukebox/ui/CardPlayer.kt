@@ -98,8 +98,27 @@ fun WaveSeekBar(modifier: Modifier = Modifier, height: Dp = 44.dp) {
         // waves over the played part
         val lv = levelsAt(clock)
         val live = Core.playing.value && !Anim.lowPower.value
-        val layers = listOf(Color(0xFFFF3B5C), Color(0xFFE040FB), Color(0xFF7C4DFF), Color(0xFF448AFF))
-        if (x - left > 4f) layers.forEachIndexed { li, c ->
+        val layers = WaveColours.of(Prefs.waveCols.value)
+        val shape = Prefs.waveShape.value
+        val top = size.height - 2 * kr - 6f
+        fun amp(fx: Float, li: Int): Float { var a = 0f
+            for (b in 0 until 3) { val centre = ((b * 0.33f + li * 0.13f + if (live) clock * (0.04f + li * 0.01f) else 0f) % 1f); a += lv[(b * 5 + li * 3) % lv.size] * exp(-((fx - centre) / 0.12f).let { it * it }) }
+            return (a * 0.75f).coerceAtMost(1f) * sin(fx * Math.PI.toFloat()).coerceAtLeast(0f) * if (live) 1f else 0.35f }
+        if (x - left > 4f && shape == 1) layers.forEachIndexed { li, c ->          // dải lụa: đường mềm có viền sáng
+            val p = Path(); for (k in 0..50) { val fx = k / 50f; val py = y - th / 2 - top * amp(fx, li) * (0.55f + 0.45f * sin(fx * 9f + clock * 2f + li)); if (k == 0) p.moveTo(left, py) else p.lineTo(left + (x - left) * fx, py) }
+            drawPath(p, c.copy(alpha = 0.3f), style = androidx.compose.ui.graphics.drawscope.Stroke(7f)); drawPath(p, c, style = androidx.compose.ui.graphics.drawscope.Stroke(2.2f))
+        }
+        if (x - left > 4f && shape == 2) layers.forEachIndexed { li, c ->          // đối xứng phát sáng quanh thanh
+            val up = Path(); val dn = Path(); val half = (size.height - y).coerceAtLeast(6f)
+            for (k in 0..50) { val fx = k / 50f; val px = left + (x - left) * fx; val a = amp(fx, li)
+                if (k == 0) { up.moveTo(px, y - top * a); dn.moveTo(px, y + half * a * 0.6f) } else { up.lineTo(px, y - top * a); dn.lineTo(px, y + half * a * 0.6f) } }
+            drawPath(up, c.copy(alpha = 0.35f), style = androidx.compose.ui.graphics.drawscope.Stroke(8f)); drawPath(up, c, style = androidx.compose.ui.graphics.drawscope.Stroke(2f))
+            drawPath(dn, c.copy(alpha = 0.25f), style = androidx.compose.ui.graphics.drawscope.Stroke(5f))
+        }
+        if (x - left > 4f && shape == 3) { val bars = ((x - left) / 9f).toInt().coerceAtLeast(1)          // cột bo tròn nhiều màu
+            for (k in 0 until bars) { val fx = (k + 0.5f) / bars; val bh = (top * amp(fx, k % 4)).coerceAtLeast(2f)
+                drawRoundRect(layers[(k * layers.size / bars).coerceIn(0, layers.size - 1)], Offset(left + k * 9f + 1.5f, y - th / 2 - bh), Size(6f, bh), CornerRadius(3f)) } }
+        if (x - left > 4f && shape == 0) layers.forEachIndexed { li, c ->
             val p = Path().apply { moveTo(left, y) }
             val steps = 40
             for (k in 0..steps) {
@@ -226,4 +245,27 @@ fun LockCard(modifier: Modifier = Modifier) {
         Spacer(Modifier.height(4.dp))
         CardButtons(leftRepeat = true, big = 50.dp)
     }
+}
+
+
+/** Màu sóng nhạc trên thanh thời gian: nhiều bộ màu rực rỡ, hoặc theo ảnh bìa. */
+object WaveColours {
+    val list = listOf(
+        Triple("vivid", "Vivid", "Rực Rỡ"), Triple("cover", "From Cover", "Theo Ảnh Bìa"), Triple("sunset", "Sunset", "Hoàng Hôn"),
+        Triple("ocean", "Ocean", "Đại Dương"), Triple("aurora", "Aurora", "Cực Quang"), Triple("rainbow", "Rainbow", "Cầu Vồng"),
+        Triple("candy", "Candy", "Kẹo Ngọt"), Triple("neon", "Neon", "Neon"), Triple("gold", "Gold", "Vàng Ánh Kim"), Triple("forest", "Forest", "Rừng Xanh"),
+    )
+    fun of(k: String): List<Color> = when (k) {
+        "cover" -> Core.palette.value.map { Color(it) }.let { p -> listOf(p[0], p.getOrElse(1) { p[0] }, p.getOrElse(2) { p[0] }, p.getOrElse(1) { p[0] }) }
+        "sunset" -> listOf(Color(0xFFFF6E40), Color(0xFFFF4081), Color(0xFFFFAB40), Color(0xFFAA00FF))
+        "ocean" -> listOf(Color(0xFF00E5FF), Color(0xFF2979FF), Color(0xFF1DE9B6), Color(0xFF3D5AFE))
+        "aurora" -> listOf(Color(0xFF69F0AE), Color(0xFF18FFFF), Color(0xFFB388FF), Color(0xFFEA80FC))
+        "rainbow" -> listOf(Color(0xFFFF5252), Color(0xFFFFD740), Color(0xFF69F0AE), Color(0xFF448AFF), Color(0xFFE040FB))
+        "candy" -> listOf(Color(0xFFFF80AB), Color(0xFFB388FF), Color(0xFF84FFFF), Color(0xFFFFFF8D))
+        "neon" -> listOf(Color(0xFF76FF03), Color(0xFFFF1744), Color(0xFF00E5FF), Color(0xFFD500F9))
+        "gold" -> listOf(Color(0xFFFFD54F), Color(0xFFFFB300), Color(0xFFFFE082), Color(0xFFFF8F00))
+        "forest" -> listOf(Color(0xFF64DD17), Color(0xFF00C853), Color(0xFFAEEA00), Color(0xFF1DE9B6))
+        else -> listOf(Color(0xFFFF3B5C), Color(0xFFE040FB), Color(0xFF7C4DFF), Color(0xFF448AFF))
+    }
+    val shapes = listOf("Soft Hills" to "Đồi Mềm", "Silk Ribbons" to "Dải Lụa", "Glowing Mirror" to "Đối Xứng Phát Sáng", "Rounded Bars" to "Cột Bo Tròn")
 }
