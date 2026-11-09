@@ -252,7 +252,7 @@ fun Pill(modifier: Modifier = Modifier, big: Boolean, onOpen: () -> Unit = {}, o
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(fmtTime(Core.position.longValue), color = st.sub, fontSize = 11.sp)
                             TimeBar(Modifier.weight(1f).padding(horizontal = 4.dp), 6.dp, 8.dp)
-                            Text(if (radio) "LIVE" else fmtTime(Core.duration.longValue), color = st.sub, fontSize = 11.sp)
+                            Text(if (radio) "LIVE" else fmtTime(Core.duration.longValue), color = st.sub, fontSize = 11.sp, maxLines = 1, softWrap = false)
                             if (slim) { if (radio) CtlBtn(recKind, 22.dp, btnCol) { toggleRec() }; CtlBtn(playKind, 24.dp, btnCol) { Core.toggle() } }
                         }
                     }
@@ -303,10 +303,11 @@ fun Pill(modifier: Modifier = Modifier, big: Boolean, onOpen: () -> Unit = {}, o
                             CtlBtn(ButtonArt.NEXT, 24.dp, btnCol, seekDir = if (radio) 0 else 1) { if (radio) Core.nextStation() else Core.next() }
                         }
                     }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(fmtTime(Core.position.longValue), color = st.sub, fontSize = 11.sp)
+                    // hai đầu viên thuốc bo tròn: lùi giờ vào trong để không bị cắt mất số phút, giây
+                    Row(Modifier.padding(start = if (large) 30.dp else 22.dp, end = if (large) 24.dp else 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Text(fmtTime(Core.position.longValue), color = st.sub, fontSize = 11.sp, maxLines = 1, softWrap = false)
                         TimeBar(Modifier.weight(1f).padding(horizontal = 6.dp), if (large) 8.dp else 6.dp, if (large) 9.dp else 7.dp)
-                        Text(if (radio) "LIVE" else fmtTime(Core.duration.longValue), color = st.sub, fontSize = 11.sp)
+                        Text(if (radio) "LIVE" else fmtTime(Core.duration.longValue), color = st.sub, fontSize = 11.sp, maxLines = 1, softWrap = false)
                     }
                 }
             }
