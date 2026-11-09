@@ -164,7 +164,7 @@ private fun CoverBackground(blurIt: Boolean) {
 }
 
 /**
- * Thẻ Ảnh Bìa (trong app): thẻ bo góc lớn, ảnh bìa làm nền tối, "Điện thoại này" + nút chọn loa, tên bài ở giữa,
+ * Mặc Định (Tom's Tech) (trong app): thẻ bo góc lớn, ảnh bìa làm nền tối, "Điện thoại này" + nút chọn loa, tên bài ở giữa,
  * sóng nhạc trên thanh thời gian, hàng nút trong vòng kính mờ. Vuốt lên để mở Đang Phát (thẻ dưới).
  */
 @Composable

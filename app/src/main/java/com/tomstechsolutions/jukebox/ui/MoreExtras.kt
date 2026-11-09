@@ -19,11 +19,11 @@ fun MoreExtras(act: MainActivity, th: JTheme) {
     SectionTitle(t("Player Style", "Kiểu Thanh Phát Nhạc"), th)
     Card(th) {
         Text(t("In the app", "Trong app"), color = th.text, fontSize = 14.sp)
-        FlowRow { listOf("card" to t("Album Cover Card", "Thẻ Ảnh Bìa"), "pill" to t("Pill", "Viên Thuốc")).forEach { (k, n) -> Chip(n, Prefs.playerStyle.value == k, th) { Prefs.playerStyle.value = k } } }
+        FlowRow { listOf("card" to t("Default (Tom's Tech)", "Mặc Định (Tom's Tech)"), "pill" to t("Pill", "Viên Thuốc")).forEach { (k, n) -> Chip(n, Prefs.playerStyle.value == k, th) { Prefs.playerStyle.value = k } } }
         Text(t("Lock screen", "Màn hình khoá"), color = th.text, fontSize = 14.sp)
-        FlowRow { listOf("card" to t("Big Album Cover", "Ảnh Bìa Lớn"), "pill" to t("Pill", "Viên Thuốc")).forEach { (k, n) -> Chip(n, Prefs.lockStyle.value == k, th) { Prefs.lockStyle.value = k } } }
-        Text(t("Album Cover Card: the cover fills the card, music waves sit on the time bar, buttons in frosted circles. Swipe up on it to open Now Playing.",
-            "Thẻ Ảnh Bìa: ảnh bìa làm nền thẻ, sóng nhạc nằm trên thanh thời gian, nút trong vòng kính mờ. Vuốt lên thẻ để mở Đang Phát."), color = th.muted, fontSize = 12.sp)
+        FlowRow { listOf("card" to t("Default (Tom's Tech)", "Mặc Định (Tom's Tech)"), "pill" to t("Pill", "Viên Thuốc")).forEach { (k, n) -> Chip(n, Prefs.lockStyle.value == k, th) { Prefs.lockStyle.value = k } } }
+        Text(t("Default (Tom's Tech): the cover fills the card, music waves sit on the time bar, buttons in frosted circles. Swipe up on it to open Now Playing.",
+            "Mặc Định (Tom's Tech): ảnh bìa làm nền thẻ, sóng nhạc nằm trên thanh thời gian, nút trong vòng kính mờ. Vuốt lên thẻ để mở Đang Phát."), color = th.muted, fontSize = 12.sp)
     }
 
     SectionTitle(t("Bottom Pill", "Viên Thuốc Dưới"), th)
