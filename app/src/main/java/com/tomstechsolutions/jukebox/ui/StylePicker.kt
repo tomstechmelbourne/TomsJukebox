@@ -274,7 +274,7 @@ fun StyleRow(cat: String, th: JTheme, onOpen: (String) -> Unit) {
         }
         Spacer(Modifier.width(6.dp))
         Box(Modifier.clip(RoundedCornerShape(12.dp)).background(th.accent).padding(horizontal = 10.dp, vertical = 7.dp)) {
-            Text(t("Change…", "Đổi…"), color = th.onAccent, fontSize = 13.sp, fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false)
+            Text(t("Change", "Đổi"), color = th.onAccent, fontSize = 13.sp, fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false)
         }
     }
 }
