@@ -1,5 +1,7 @@
 package com.tomstechsolutions.jukebox.ui
 
+import com.tomstechsolutions.jukebox.Prefs
+
 import android.graphics.Canvas
 import android.graphics.LinearGradient
 import android.graphics.Paint
@@ -51,6 +53,7 @@ object ButtonArt {
     )
 
     fun draw(c: Canvas, kind: Int, styleIn: Int, size: Float, color: Int, pressed: Boolean = false, glow: Float = 0f) {
+        if ((kind == REC || kind == REC_STOP) && Prefs.recStyle.value > 0) { RecArt.draw(c, kind == REC_STOP, Prefs.recStyle.value, size, RecArt.colour(), pressed); return }
         val (style, deco) = Motifs.buttonStyle(styleIn)
         val pc = Paint(Paint.ANTI_ALIAS_FLAG)
         if (deco != null) {                       // theme button set: the theme's colours as a ring behind the button
@@ -62,7 +65,7 @@ object ButtonArt {
             pc.style = Paint.Style.FILL; c.drawCircle(size / 2, size / 2, size * 0.44f, pc)
             pc.reset(); pc.isAntiAlias = true
         }
-        val col = if (kind == REC || kind == REC_STOP) 0xFFFF4D4D.toInt() else color
+        val col = if (kind == REC || kind == REC_STOP) RecArt.colour() else color
         val cx = size / 2; val cy = size / 2
         val dark = 0xFF1B1F24.toInt()
         val inner = size * 0.58f; val ix = (size - inner) / 2

@@ -2,7 +2,14 @@ package com.tomstechsolutions.jukebox.ui
 
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -71,6 +78,32 @@ fun MoreExtras(act: MainActivity, th: JTheme) {
         FlowRow { listOf("small" to t("Compact", "Gọn"), "medium" to t("Medium", "Vừa"), "large" to t("Large", "To")).forEach { (k, n) -> Chip(n, Prefs.lockSize.value == k, th) { Prefs.lockSize.value = k } } }
         SliderRow(t("Transparency", "Độ Trong Suốt"), th, 1f - Prefs.lockAlpha.value, 0f..0.8f, label = "${((1f - Prefs.lockAlpha.value) * 100).toInt()}%") { Prefs.lockAlpha.value = 1f - it }
         Text(t("Double-tap an empty spot on the lock screen to put the pill back at the bottom.", "Nhấp 2 lần vào chỗ trống trên màn hình khoá để đưa viên thuốc về dưới cùng."), color = th.muted, fontSize = 12.sp)
+    }
+
+    SectionTitle(t("Record Button", "Nút Thâu Âm"), th)
+    Card(th) {
+        Text(t("Design (tap to choose):", "Kiểu nút (nhấn để chọn):"), color = th.text, fontSize = 14.sp)
+        FlowRow {
+            RecArt.names.indices.forEach { i ->
+                val on = Prefs.recStyle.value == i
+                androidx.compose.foundation.layout.Column(Modifier.padding(3.dp).width(78.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(14.dp))
+                    .background(if (on) th.accent.copy(alpha = 0.25f) else th.card).clickable { Prefs.recStyle.value = i }.padding(6.dp),
+                    horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+                    Row {
+                        for (stop in listOf(false, true)) androidx.compose.foundation.Canvas(Modifier.size(30.dp)) {
+                            drawIntoCanvas { cv -> if (i == 0) ButtonArt.draw(cv.nativeCanvas, if (stop) ButtonArt.REC_STOP else ButtonArt.REC, Prefs.btnStyle.value, size.width, android.graphics.Color.WHITE)
+                                else RecArt.draw(cv.nativeCanvas, stop, i, size.width, RecArt.colour()) }
+                        }
+                    }
+                    Text(RecArt.name(i), color = if (on) th.accent else th.text, fontSize = 10.sp, maxLines = 2, textAlign = androidx.compose.ui.text.style.TextAlign.Center, lineHeight = 12.sp)
+                }
+            }
+        }
+        Text(t("Colour:", "Màu nút thâu:"), color = th.text, fontSize = 14.sp)
+        FlowRow { RecArt.colours.forEach { (k, en, vi) -> Chip(t(en, vi), Prefs.recColour.value == k, th) { Prefs.recColour.value = k } } }
+        if (Prefs.recColour.value == "custom") HuePicker(Prefs.recCustom.value, th) { Prefs.recCustom.value = it }
+        SwitchRow(t("Blink While Recording", "Nhấp Nháy Khi Đang Thâu"), th, Prefs.recBlink.value) { Prefs.recBlink.value = it }
+        Text(t("Left = ready to record, right = recording (tap to stop).", "Hình trái = sẵn sàng thâu, hình phải = đang thâu (bấm để dừng)."), color = th.muted, fontSize = 12.sp)
     }
 
     SectionTitle("Podcast", th)

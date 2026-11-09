@@ -145,7 +145,11 @@ fun CtlBtn(kind: Int, size: Dp, colour: Color, seekDir: Int = 0, onClick: () -> 
             if (!held) { hp(); onClick() }
         })
     }, contentAlignment = Alignment.Center) {
-        Canvas(Modifier.size(s)) {
+        val blink = if (kind == ButtonArt.REC_STOP && Prefs.recBlink.value) {
+            val tr = androidx.compose.animation.core.rememberInfiniteTransition(label = "rec")
+            tr.animateFloat(1f, 0.35f, androidx.compose.animation.core.infiniteRepeatable(androidx.compose.animation.core.tween(700), androidx.compose.animation.core.RepeatMode.Reverse), label = "recA").value
+        } else 1f
+        Canvas(Modifier.size(s).graphicsLayer { alpha = blink }) {
             drawIntoCanvas { ButtonArt.draw(it.nativeCanvas, kind, Prefs.btnStyle.value, size.toPx() * Prefs.btnScale.value, colour.toArgb(), pressed, glow) }
         }
     }
