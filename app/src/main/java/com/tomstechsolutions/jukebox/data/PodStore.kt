@@ -72,7 +72,7 @@ object PodStore {
         val f = fileFor(ctx, e); if (f.exists() && f.length() > 10_000) return@withContext true
         val tmp = File(f.path + ".part")
         try {
-            var url = e.url
+            var url = e.best()
             var c: HttpURLConnection? = null
             for (hop in 0 until 6) {
                 val cc = URL(url).openConnection() as HttpURLConnection
@@ -100,7 +100,7 @@ object PodStore {
     // ---- background check every 6 hours ----
     fun schedule(ctx: Context) {
         val wm = WorkManager.getInstance(ctx)
-        if (Prefs.podNotify.value.isBlank() && Prefs.podAutoDl.value.isBlank()) { wm.cancelUniqueWork("pod_check"); return }
+        if (Prefs.podNotify.value.isBlank() && Prefs.podAutoDl.value.isBlank() && Prefs.podAutoSave.value.isBlank()) { wm.cancelUniqueWork("pod_check"); return }
         wm.enqueueUniquePeriodicWork("pod_check", ExistingPeriodicWorkPolicy.KEEP, PeriodicWorkRequestBuilder<PodWorker>(6, TimeUnit.HOURS).build())
     }
 
@@ -141,6 +141,11 @@ class PodWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, p
             val keep = eps.take(Prefs.podKeep.value.coerceIn(1, 20))
             keep.forEach { PodStore.download(ctx, it) }
             if (keep.isNotEmpty()) PodStore.trim(ctx, keep.first().podcast, keep.map { it.url })
+        }
+        // ⏰ Hẹn Giờ Thâu: lưu tập mới của các kênh đã chọn vào Bản Thâu Âm (chỉ khi có Wi-Fi)
+        if (PodStore.unmetered(ctx)) for (p in PodStore.parse(Prefs.podAutoSave.value)) {
+            val newest = try { Podcasts.episodes(p).firstOrNull() } catch (_: Exception) { null } ?: continue
+            if (!PodSave.alreadySaved(newest.url) && PodSave.saveWhole(ctx, newest)) PodSave.markSaved(newest.url)
         }
         return Result.success()
     }

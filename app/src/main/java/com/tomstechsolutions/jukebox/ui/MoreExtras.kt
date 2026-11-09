@@ -59,6 +59,16 @@ fun MoreExtras(act: MainActivity, th: JTheme) {
         Text(t("Double-tap an empty spot on the lock screen to put the pill back at the bottom.", "Nhấp 2 lần vào chỗ trống trên màn hình khoá để đưa viên thuốc về dưới cùng."), color = th.muted, fontSize = 12.sp)
     }
 
+    SectionTitle("Podcast", th)
+    Card(th) {
+        SwitchRow(t("Download The Highest Quality", "Tải Bản Chất Lượng Cao"), th, Prefs.podHQ.value,
+            t("Always the original file, never re-compressed; the higher-bitrate version when a channel offers one.", "Luôn tải file gốc, không nén lại; kênh nào có bản bitrate cao hơn thì tải bản đó.")) { Prefs.podHQ.value = it }
+        Text(t("Auto download keeps the newest:", "Tải tự động giữ số tập mới nhất:"), color = th.text, fontSize = 14.sp)
+        FlowRow { listOf(3, 5, 10, 20).forEach { n -> Chip(t("$n episodes", "$n tập"), Prefs.podKeep.value == n, th) { Prefs.podKeep.value = n } } }
+        Text(t("Recording a podcast: ● next to Play records from now until you stop; [A B] ✂ on Now Playing cuts a part; long-press an episode › Save Whole Episode. Files go to Recordings › Podcast.",
+            "Thâu podcast: ● bên trái Play thâu từ lúc bấm tới lúc dừng; [A B] ✂ ở Đang Phát để cắt một đoạn; nhấn giữ một tập › Lưu Cả Tập. File nằm trong Bản Thâu Âm › Podcast."), color = th.muted, fontSize = 12.sp)
+    }
+
     SectionTitle(t("Home Screen Widgets", "Widget Màn Hình Chính"), th)
     Card(th) {
         Text(t("Hold an empty spot on the home screen › Widgets › Tom's Jukebox. Pill, Radio, Podcast, Sleep Timer and Album Cover widgets; stretch them to any size.",

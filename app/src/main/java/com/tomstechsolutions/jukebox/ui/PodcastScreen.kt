@@ -51,6 +51,7 @@ import androidx.core.graphics.drawable.IconCompat
 import com.tomstechsolutions.jukebox.Prefs
 import com.tomstechsolutions.jukebox.R
 import com.tomstechsolutions.jukebox.data.Episode
+import com.tomstechsolutions.jukebox.data.PodSave
 import com.tomstechsolutions.jukebox.data.PodStore
 import com.tomstechsolutions.jukebox.data.Podcast
 import com.tomstechsolutions.jukebox.data.PodcastGroups
@@ -208,6 +209,10 @@ fun PodcastScreen(th: JTheme) {
             (if (PodStore.autoDlOn(mp)) "⬇  " + t("Auto Download (Wi-Fi): On", "Tải Tự Động (Wi-Fi): Đang Bật") else "⬇  " + t("Auto Download New Episodes (Wi-Fi)", "Tải Tự Động Tập Mới (Wi-Fi)")) to {
                 scope.launch { val r = try { Podcasts.resolve(mp) } catch (_: Exception) { mp }; if (r.feed.isNotBlank()) PodStore.toggleAutoDl(ctx, r) } },
             "➕  " + t("Add Latest To Queue", "Thêm Vào Danh Sách Chờ") to { latest(mp) { Core.queueEpisode(it) } },
+            (if (PodSave.autoSaveOn(mp)) "⏰  " + t("Auto-Save New Episodes: On", "Tự Lưu Tập Mới Vào Bản Thâu: Đang Bật") else "⏰  " + t("Auto-Save Each New Episode To Recordings", "Tự Lưu Tập Mới Mỗi Ngày Vào Bản Thâu Âm")) to {
+                scope.launch { val r = try { Podcasts.resolve(mp) } catch (_: Exception) { mp }; if (r.feed.isNotBlank()) { val was = PodSave.autoSaveOn(r); PodSave.toggleAutoSave(ctx, r)
+                    if (!was) latest(r) { e -> scope.launch { if (!PodSave.alreadySaved(e.url) && PodSave.saveWhole(ctx, e)) PodSave.markSaved(e.url) } } } } },
+            "💾  " + t("Save Latest Episode To Recordings", "Lưu Tập Mới Nhất Vào Bản Thâu Âm") to { latest(mp) { e -> scope.launch { PodSave.saveWhole(ctx, e) } } },
             "📌  " + t("Pin To Home Screen", "Ghim Ra Màn Hình Chính") to { scope.launch { val r = try { Podcasts.resolve(mp) } catch (_: Exception) { mp }; pin(ctx, r) } },
             "⏩  " + t("Speed For This Channel", "Tốc Độ Riêng Cho Kênh") + " (${fmtSpeed(PodStore.speed(mp.title))})" to { speedFor = mp },
             "⏭  " + t("Skip The Intro", "Bỏ Qua Phần Đầu") + (PodStore.skip(mp.title).let { if (it > 0) " (${it}s)" else "" }) to { skipFor = mp },
@@ -225,6 +230,7 @@ fun PodcastScreen(th: JTheme) {
             (if (played) "○  " + t("Mark As Not Played", "Đánh Dấu Chưa Nghe") else "✓  " + t("Mark As Played", "Đánh Dấu Đã Nghe")) to { PodStore.setPlayed(e.url, !played); tick++ },
             if (local) "🗑  " + t("Delete Download", "Xoá Bản Tải") to { PodStore.localFile(ctx, e)?.delete(); tick++ }
             else "⬇  " + t("Download", "Tải Về") to { msg = t("Downloading…", "Đang tải…"); scope.launch { msg = if (PodStore.download(ctx, e)) t("Downloaded.", "Đã tải xong.") else t("Download failed.", "Tải không được."); tick++ } },
+            "💾  " + t("Save Whole Episode To Recordings", "Lưu Cả Tập Vào Bản Thâu Âm") to { scope.launch { PodSave.saveWhole(ctx, e) } },
             "➕  " + t("Add To Queue", "Thêm Vào Danh Sách Chờ") to { Core.queueEpisode(e) },
         ))
     }

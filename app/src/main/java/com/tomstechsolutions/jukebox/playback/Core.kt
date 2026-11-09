@@ -1,5 +1,7 @@
 package com.tomstechsolutions.jukebox.playback
 
+import com.tomstechsolutions.jukebox.data.PodSave
+
 import android.content.ComponentName
 import android.content.Context
 import android.graphics.Bitmap
@@ -273,11 +275,49 @@ object Core {
         service?.eq?.apply()
     }
 
+    // ---- ● Thâu: radio records the live stream; a podcast saves the part between start and stop (cut from the original file) ----
+    val podRecFrom = mutableLongStateOf(-1L)
+    val clipA = mutableLongStateOf(-1L)
+    val clipB = mutableLongStateOf(-1L)
+
+    /** Where to read the current podcast episode from: the downloaded file if there is one. */
+    fun podSource(): String {
+        val c = controller ?: return uri.value
+        val local = c.currentMediaItem?.localConfiguration?.uri?.toString()
+        return if (local != null && local.startsWith("file:")) local.removePrefix("file://") else uri.value
+    }
+
     fun startRecording() {
+        if (kind.value == "podcast") {
+            val c = controller ?: return
+            podRecFrom.longValue = c.currentPosition; recording.value = true
+            Messages.add(t("Recording this podcast from ", "Bắt đầu thâu podcast từ ") + fmt(c.currentPosition))
+            return
+        }
         val s = station.value ?: return
         service?.recorder?.start(s.name, s.url, s.codec)
     }
-    fun stopRecording() { service?.recorder?.stop() }
+    fun stopRecording() {
+        if (podRecFrom.longValue >= 0) {
+            val c = controller; val a = podRecFrom.longValue; val b = c?.currentPosition ?: a
+            podRecFrom.longValue = -1L; recording.value = false
+            val src = podSource(); val ti = title.value; val pod = artist.value
+            scope.launch { PodSave.saveClip(App.ctx, src, ti, pod, a, b) }
+            return
+        }
+        service?.recorder?.stop()
+    }
+
+    /** ✂ Cắt Đoạn A–B */
+    fun markA() { controller?.let { clipA.longValue = it.currentPosition; if (clipB.longValue in 0..clipA.longValue) clipB.longValue = -1L } }
+    fun markB() { controller?.let { clipB.longValue = it.currentPosition; if (clipA.longValue < 0) clipA.longValue = 0L } }
+    fun saveAB() {
+        val a = clipA.longValue; val b = clipB.longValue
+        if (a < 0 || b <= a) { Messages.add(t("Set both A and B first.", "Hãy đặt cả mốc A và B trước.")); return }
+        val src = podSource(); val ti = title.value; val pod = artist.value
+        scope.launch { PodSave.saveClip(App.ctx, src, ti, pod, a, b) }
+    }
+    private fun fmt(ms: Long): String { val s = ms / 1000; return if (s >= 3600) "%d:%02d:%02d".format(s / 3600, s / 60 % 60, s % 60) else "%d:%02d".format(s / 60, s % 60) }
 
     fun saveQueue() {
         val c = controller ?: return

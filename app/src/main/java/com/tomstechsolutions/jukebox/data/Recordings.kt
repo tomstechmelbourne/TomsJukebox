@@ -10,7 +10,7 @@ import kotlinx.coroutines.withContext
 
 /** Bản Thâu Âm: files in Music/Tom's Jukebox/Recordings. */
 object Recordings {
-    data class Rec(val id: Long, val uri: String, val name: String, val date: Long, val durationMs: Long, val size: Long)
+    data class Rec(val id: Long, val uri: String, val name: String, val date: Long, val durationMs: Long, val size: Long, val podcast: Boolean = false)
 
     suspend fun list(ctx: Context): List<Rec> = withContext(Dispatchers.IO) {
         val out = ArrayList<Rec>()
@@ -21,10 +21,11 @@ object Recordings {
         val args = if (Build.VERSION.SDK_INT >= 29) arrayOf("%Tom's Jukebox/Recordings%") else arrayOf("%/Tom's Jukebox/Recordings/%")
         try {
             ctx.contentResolver.query(coll, arrayOf(MediaStore.Audio.Media._ID, MediaStore.Audio.Media.DISPLAY_NAME, MediaStore.Audio.Media.DATE_ADDED,
-                MediaStore.Audio.Media.DURATION, MediaStore.Audio.Media.SIZE), sel, args, MediaStore.Audio.Media.DATE_ADDED + " DESC")?.use { c ->
+                MediaStore.Audio.Media.DURATION, MediaStore.Audio.Media.SIZE, if (Build.VERSION.SDK_INT >= 29) MediaStore.Audio.Media.RELATIVE_PATH else dataCol), sel, args, MediaStore.Audio.Media.DATE_ADDED + " DESC")?.use { c ->
                 while (c.moveToNext()) {
                     val id = c.getLong(0)
-                    out += Rec(id, ContentUris.withAppendedId(coll, id).toString(), c.getString(1) ?: "", c.getLong(2) * 1000, c.getLong(3), c.getLong(4))
+                    out += Rec(id, ContentUris.withAppendedId(coll, id).toString(), c.getString(1) ?: "", c.getLong(2) * 1000, c.getLong(3), c.getLong(4),
+                        (c.getString(5) ?: "").contains("Recordings/Podcast"))
                 }
             }
         } catch (_: Exception) { }

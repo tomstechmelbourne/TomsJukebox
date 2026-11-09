@@ -54,15 +54,24 @@ object Podcasts {
         val out = ArrayList<Pair<Long, Episode>>()
         var inItem = false
         var stamp = 0L
+        var hq = ""; var hqRate = 0L; var altRate = -1L; var altAudio = false
         var title = ""; var url = ""; var date = ""; var dur = 0L; var desc = ""; var img = ""
         var cDesc = ""; var cLink = ""; var cLang = ""
         var ev = parser.eventType
         while (ev != XmlPullParser.END_DOCUMENT && out.size < 5000) {
             when (ev) {
                 XmlPullParser.START_TAG -> when (parser.name) {
-                    "item" -> { inItem = true; title = ""; url = ""; date = ""; dur = 0; desc = ""; img = ""; stamp = 0L }
+                    "item" -> { inItem = true; title = ""; url = ""; date = ""; dur = 0; desc = ""; img = ""; stamp = 0L; hq = ""; hqRate = 0L; altRate = -1L }
                     "title" -> if (inItem) title = parser.nextText().trim()
                     "enclosure" -> if (inItem) url = parser.getAttributeValue(null, "url") ?: ""
+                    "podcast:alternateEnclosure" -> if (inItem) {
+                        altRate = parser.getAttributeValue(null, "bitrate")?.toDoubleOrNull()?.toLong() ?: 0L
+                        altAudio = parser.getAttributeValue(null, "type")?.startsWith("audio") == true
+                    }
+                    "podcast:source" -> if (inItem && altAudio && altRate > hqRate) {
+                        val u = parser.getAttributeValue(null, "uri") ?: ""
+                        if (u.startsWith("http")) { hq = u; hqRate = altRate }
+                    }
                     "pubDate" -> if (inItem) { val raw = parser.nextText().trim(); stamp = parseDate(raw); date = if (stamp > 0) showDate(stamp) else raw.take(16) }
                     "itunes:duration" -> if (inItem) dur = parseDur(parser.nextText())
                     "description" -> if (inItem) desc = parser.nextText().replace(Regex("<[^>]+>"), "").trim().take(400)
@@ -73,7 +82,7 @@ object Podcasts {
                 }
                 XmlPullParser.END_TAG -> if (parser.name == "item") {
                     inItem = false
-                    if (url.isNotBlank()) out += stamp to Episode(title, url, date, dur, p.title, img.ifBlank { p.image }, desc)
+                    if (url.isNotBlank()) out += stamp to Episode(title, url, date, dur, p.title, img.ifBlank { p.image }, desc, hq)
                 }
             }
             ev = parser.next()

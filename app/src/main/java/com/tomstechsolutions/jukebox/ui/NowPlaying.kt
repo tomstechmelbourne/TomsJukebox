@@ -131,6 +131,7 @@ fun NowPlayingScreen(act: MainActivity, th: JTheme, embedded: Boolean, onClose: 
             if (!short && Prefs.vizOn.value && Prefs.vizStrip.value) Visualizer(Modifier.fillMaxWidth().height(46.dp).padding(vertical = 4.dp))
             if (Prefs.skin.value == "ipod") IpodWheel()
             else Pill(Modifier.padding(vertical = 6.dp), big = true, onLong = { act.showSleep.value = true })
+            if (!short) PodTools()
             // extra buttons row: Danh Sách – Lời Bài Hát – Xáo Trộn – Lặp Lại – Hẹn Giờ – Chỉnh Âm – Kết Nối Thiết Bị
             Row(Modifier.fillMaxWidth().padding(bottom = 6.dp), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
                 IconBtn(Gl.queue, Color.White, 22.dp, active = view == 2) { view = if (view == 2) 0 else 2 }

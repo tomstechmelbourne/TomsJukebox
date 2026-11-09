@@ -33,6 +33,10 @@ data class Podcast(val title: String, val author: String, val feed: String, val 
 data class Episode(
     val title: String, val url: String, val date: String, val durationS: Long,
     val podcast: String, val image: String, val description: String,
-)
+    val hq: String = "",          // bản chất lượng cao hơn nếu kênh có (podcast:alternateEnclosure)
+) {
+    /** The file to download: the highest-quality version when "Tải chất lượng cao" is on. */
+    fun best(): String = if (com.tomstechsolutions.jukebox.Prefs.podHQ.value && hq.isNotBlank()) hq else url
+}
 
 data class LyricLine(val timeMs: Long, val text: String)

@@ -51,7 +51,8 @@ fun RecordingsScreen(act: MainActivity, th: JTheme, onBack: () -> Unit) {
     var list by remember { mutableStateOf<List<Recordings.Rec>>(emptyList()) }
     var reload by remember { mutableIntStateOf(0) }
     var renaming by remember { mutableStateOf<Recordings.Rec?>(null) }
-    LaunchedEffect(reload, Core.recording.value, Library_deleted()) { list = Recordings.list(ctx) }
+    var group by remember { mutableIntStateOf(0) }          // 0 tất cả · 1 radio · 2 podcast
+    LaunchedEffect(reload, Core.recording.value, Library_deleted(), group) { list = Recordings.list(ctx).filter { group == 0 || (group == 2) == it.podcast } }
     fun asTracks() = list.map { Track(it.id, it.uri, it.name.substringBeforeLast('.'), t("Recording", "Bản Thâu"), "", 0, it.durationMs, "Recordings", "audio/*") }
     Column(Modifier.fillMaxSize().padding(horizontal = 14.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -59,14 +60,15 @@ fun RecordingsScreen(act: MainActivity, th: JTheme, onBack: () -> Unit) {
             Text(t("Recordings", "Bản Thâu Âm"), color = th.text, fontSize = 22.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
             IconBtn(Gl.reconnect, th.muted) { reload++ }
         }
+        Row { listOf(t("All", "Tất Cả"), "Radio", "Podcast").forEachIndexed { i, s -> SmallChip(s, group == i, th) { group = i } } }
         if (Core.recording.value) {
             Row(Modifier.fillMaxWidth().padding(vertical = 6.dp).clip(RoundedCornerShape(16.dp)).background(Color(0x33FF4D4D)).padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text("● " + t("Recording: ", "Đang thâu: ") + (Core.station.value?.name ?: "") + "  ·  " + Recordings.sizeText(Core.recordedBytes.longValue),
+                Text("● " + t("Recording: ", "Đang thâu: ") + (if (Core.podRecFrom.longValue >= 0) Core.title.value else (Core.station.value?.name ?: "") + "  ·  " + Recordings.sizeText(Core.recordedBytes.longValue)),
                     color = Color(0xFFFF6B6B), fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
                 Btn(t("Stop", "Dừng"), th, primary = true) { Core.stopRecording() }
             }
         }
-        if (list.isEmpty()) Text(t("No recordings yet. While listening to radio, tap ● next to Play.", "Chưa có bản thâu nào. Khi nghe radio, bấm ● bên trái nút Play để thâu."), color = th.muted, modifier = Modifier.padding(vertical = 12.dp))
+        if (list.isEmpty()) Text(t("No recordings yet. While listening to radio or a podcast, tap ● next to Play.", "Chưa có bản thâu nào. Khi nghe radio hay podcast, bấm ● bên trái nút Play để thâu."), color = th.muted, modifier = Modifier.padding(vertical = 12.dp))
         else Row { Btn(t("Play All", "Phát Tất Cả"), th, Gl.play, primary = true) { Core.playTracks(asTracks()) }; Text("${list.size} " + t("files", "file"), color = th.muted, modifier = Modifier.padding(top = 12.dp)) }
         LazyColumn(verticalArrangement = Rows) {
             items(list, key = { it.uri }) { r ->
@@ -74,7 +76,7 @@ fun RecordingsScreen(act: MainActivity, th: JTheme, onBack: () -> Unit) {
                 val info = listOf(SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.US).format(Date(r.date)),
                     if (r.durationMs > 0) fmtTime(r.durationMs) else "", Recordings.sizeText(r.size)).filter { it.isNotBlank() }.joinToString(" · ")
                 Row2(r.name.substringBeforeLast('.'), info, th, selected = Core.uri.value == r.uri,
-                    leading = { G(Gl.record, Color(0xFFFF5252), 34.dp) },
+                    leading = { G(if (r.podcast) Gl.podcast else Gl.record, if (r.podcast) SKY else Color(0xFFFF5252), 34.dp) },
                     trailing = {
                         IconBtn(Gl.play, th.text, 22.dp) { Core.playTracks(asTracks(), list.indexOf(r)) }
                         Box {

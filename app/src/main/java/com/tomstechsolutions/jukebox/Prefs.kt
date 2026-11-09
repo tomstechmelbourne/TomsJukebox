@@ -138,7 +138,10 @@ object Prefs {
     val podPlayed = p("pod_played", "")           // url tập đã nghe
     val podSeen = p("pod_seen", "{}")             // feed -> tập mới nhất đã thấy
     val podNew = p("pod_new", "")                 // feed có tập mới chưa mở (chấm đỏ trên widget)
-    val radioFavs = p("radio_favs", "")           // tên đài yêu thích, mỗi dòng
+    val radioFavs = p("radio_favs", "")
+    val podHQ = p("pod_hq", true)                 // tải bản chất lượng cao nhất kênh có
+    val podAutoSave = p("pod_auto_save", "")      // ⏰ kênh tự lưu tập mới vào Bản Thâu Âm
+    val podSavedUrls = p("pod_saved_urls", "")           // tên đài yêu thích, mỗi dòng
     val playlists = p("playlists", "{}")
     val lastQueue = p("last_queue", "[]")
     val lastIndex = p("last_index", 0)

@@ -196,6 +196,7 @@ fun Pill(modifier: Modifier = Modifier, big: Boolean, onOpen: () -> Unit = {}, o
     val tilt = rememberTilt(Prefs.skin.value == "liquid")
     val edgeHere = Prefs.edgeOn.value && Prefs.edgeWhere.value != "window"
     val radio = Core.kind.value == "radio"
+    val recOn = radio || Core.kind.value == "podcast"      // ● Thâu cho radio và podcast
     val btnCol = buttonColour(st.btn)
     val hp = haptic()
     Box(modifier.fillMaxWidth().height(h)) {
@@ -243,7 +244,7 @@ fun Pill(modifier: Modifier = Modifier, big: Boolean, onOpen: () -> Unit = {}, o
                             SleepBadge(st.text)
                         }
                         if (!slim) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-                            if (radio) CtlBtn(recKind, 30.dp, btnCol) { toggleRec() } else CtlBtn(ButtonArt.PREV, 26.dp, btnCol, seekDir = -1) { Core.prev() }
+                            if (recOn) CtlBtn(recKind, 30.dp, btnCol) { toggleRec() } else CtlBtn(ButtonArt.PREV, 26.dp, btnCol, seekDir = -1) { Core.prev() }
                             Spacer(Modifier.width(6.dp))
                             CtlBtn(playKind, 36.dp, btnCol) { Core.toggle() }
                             Spacer(Modifier.width(6.dp))
@@ -253,7 +254,7 @@ fun Pill(modifier: Modifier = Modifier, big: Boolean, onOpen: () -> Unit = {}, o
                             Text(fmtTime(Core.position.longValue), color = st.sub, fontSize = 11.sp)
                             TimeBar(Modifier.weight(1f).padding(horizontal = 4.dp), 6.dp, 8.dp)
                             Text(if (radio) "LIVE" else fmtTime(Core.duration.longValue), color = st.sub, fontSize = 11.sp, maxLines = 1, softWrap = false)
-                            if (slim) { if (radio) CtlBtn(recKind, 22.dp, btnCol) { toggleRec() }; CtlBtn(playKind, 24.dp, btnCol) { Core.toggle() } }
+                            if (slim) { if (recOn) CtlBtn(recKind, 22.dp, btnCol) { toggleRec() }; CtlBtn(playKind, 24.dp, btnCol) { Core.toggle() } }
                         }
                     }
                 }
@@ -271,7 +272,7 @@ fun Pill(modifier: Modifier = Modifier, big: Boolean, onOpen: () -> Unit = {}, o
                         }
                         TimeBar(Modifier.fillMaxWidth(), 4.dp, 5.dp)
                     }
-                    if (radio) CtlBtn(recKind, if (slim) 22.dp else 26.dp, btnCol) { toggleRec() }
+                    if (recOn) CtlBtn(recKind, if (slim) 22.dp else 26.dp, btnCol) { toggleRec() }
                     CtlBtn(playKind, if (slim) 24.dp else 28.dp, btnCol) { Core.toggle() }
                     CtlBtn(ButtonArt.NEXT, 22.dp, btnCol, seekDir = if (radio) 0 else 1) { if (radio) Core.nextStation() else Core.next() }
                 }
@@ -292,13 +293,13 @@ fun Pill(modifier: Modifier = Modifier, big: Boolean, onOpen: () -> Unit = {}, o
                                 SleepBadge(st.sub)
                             }
                             if (large) Row(verticalAlignment = Alignment.CenterVertically) {
-                                if (radio) CtlBtn(recKind, 34.dp, btnCol) { toggleRec() } else CtlBtn(ButtonArt.PREV, 30.dp, btnCol, seekDir = -1) { Core.prev() }
+                                if (recOn) CtlBtn(recKind, 34.dp, btnCol) { toggleRec() } else CtlBtn(ButtonArt.PREV, 30.dp, btnCol, seekDir = -1) { Core.prev() }
                                 Spacer(Modifier.width(8.dp)); CtlBtn(playKind, 40.dp, btnCol) { Core.toggle() }; Spacer(Modifier.width(8.dp))
                                 CtlBtn(ButtonArt.NEXT, 30.dp, btnCol, seekDir = if (radio) 0 else 1) { if (radio) Core.nextStation() else Core.next() }
                             }
                         }
                         if (!large) {
-                            if (radio) CtlBtn(recKind, 28.dp, btnCol) { toggleRec() } else CtlBtn(ButtonArt.PREV, 24.dp, btnCol, seekDir = -1) { Core.prev() }
+                            if (recOn) CtlBtn(recKind, 28.dp, btnCol) { toggleRec() } else CtlBtn(ButtonArt.PREV, 24.dp, btnCol, seekDir = -1) { Core.prev() }
                             CtlBtn(playKind, 32.dp, btnCol) { Core.toggle() }
                             CtlBtn(ButtonArt.NEXT, 24.dp, btnCol, seekDir = if (radio) 0 else 1) { if (radio) Core.nextStation() else Core.next() }
                         }
