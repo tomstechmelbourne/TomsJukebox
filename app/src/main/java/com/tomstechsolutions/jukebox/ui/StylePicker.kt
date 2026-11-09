@@ -47,6 +47,8 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.graphics.drawscope.inset
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
@@ -134,9 +136,9 @@ object Pickers {
                 drawRoundRect(tm.card, Offset(w * 0.1f, h * 0.44f), Size(w * 0.4f, h * 0.14f), CornerRadius(6f)); drawCircle(tm.accent, h * 0.14f, Offset(w * 0.8f, h * 0.75f)) }
             "skin" -> { drawRect(Color(0xFF0B1720)); val pw = w * 0.9f; val ph = h * 0.5f
                 val st = skinStyle(id)
-                androidx.compose.ui.graphics.drawscope.inset(w * 0.05f, h * 0.25f, w * 0.05f, h * 0.25f) {
+                inset(w * 0.05f, h * 0.25f, w * 0.05f, h * 0.25f) {
                     val path = androidx.compose.ui.graphics.Path().apply { addRoundRect(androidx.compose.ui.geometry.RoundRect(0f, 0f, pw, ph, CornerRadius(ph / 2))) }
-                    androidx.compose.ui.graphics.drawscope.clipPath(path) { paintSkin(0f, 0f, id) }
+                    clipPath(path) { paintSkin(0f, 0f, id) }
                     drawCircle(st.btn, ph * 0.18f, Offset(pw * 0.82f, ph / 2))
                     drawRoundRect(st.text.copy(alpha = 0.8f), Offset(ph * 0.5f, ph * 0.38f), Size(pw * 0.4f, ph * 0.1f), CornerRadius(4f))
                 } }

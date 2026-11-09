@@ -186,7 +186,7 @@ fun AnimatedSplash(styleIn: Int, onDone: () -> Unit) {
         onDone()
     }
     val v = p.value
-    val bg = if (style == 4) Core.palette.value.map { Color(it) }.let { listOf(it[0].darken(0.7f), it.getOrElse(1) { it[0] }.darken(0.35f)) } else listOf(NAVY, NAVY_D)
+    val bg = if (style == 4) Core.palette.value.map { Color(it) }.let { pc -> listOf(pc[0].darken(0.7f), pc.getOrElse(1) { pc[0] }.darken(0.35f)) } else listOf(NAVY, NAVY_D)
     val corner = screenCorner()
     // phase 1 (0..0.42): the icon appears with a springy bounce; phase 2: it opens into the app
     val pop = if (v < 0.42f) { val f = v / 0.42f; 0.4f + 0.75f * f - 0.15f * sin(f * PI.toFloat()) * (1 - f) + sin(f * PI.toFloat() * 2.5f) * 0.12f * (1 - f) } else 1f
