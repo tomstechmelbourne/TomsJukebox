@@ -41,7 +41,10 @@ object Themes {
     )
 
     @Composable
-    fun current(): JTheme {
+    fun current(): JTheme = now()
+
+    /** Same as current(), usable outside Compose (drawing code). */
+    fun now(): JTheme {
         val key = Prefs.theme.state.value
         Motifs.of(key)?.let { return Motifs.theme(it) }
         if (key == "custom") {

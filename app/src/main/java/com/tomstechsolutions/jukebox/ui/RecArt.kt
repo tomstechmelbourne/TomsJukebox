@@ -30,7 +30,7 @@ object RecArt {
     fun colour(k: String = Prefs.recColour.value): Int = when (k) {
         "orange" -> 0xFFFF8F1F.toInt(); "pink" -> 0xFFFF4F9A.toInt(); "purple" -> 0xFFA855F7.toInt(); "blue" -> 0xFF3B82F6.toInt()
         "teal" -> 0xFF14B8A6.toInt(); "green" -> 0xFF22C55E.toInt(); "yellow" -> 0xFFFACC15.toInt(); "white" -> 0xFFFFFFFF.toInt()
-        "cover" -> Core.palette.value[0]; "theme" -> Themes.current().accent.toArgb(); "custom" -> Prefs.recCustom.value
+        "cover" -> Core.palette.value[0]; "theme" -> Themes.now().accent.toArgb(); "custom" -> Prefs.recCustom.value
         else -> 0xFFFF3B3B.toInt()
     }
 

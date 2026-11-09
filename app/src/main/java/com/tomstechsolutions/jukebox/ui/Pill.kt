@@ -1,5 +1,6 @@
 package com.tomstechsolutions.jukebox.ui
 
+import androidx.compose.animation.core.animateFloat
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -147,7 +148,7 @@ fun CtlBtn(kind: Int, size: Dp, colour: Color, seekDir: Int = 0, onClick: () -> 
     }, contentAlignment = Alignment.Center) {
         val blink = if (kind == ButtonArt.REC_STOP && Prefs.recBlink.value) {
             val tr = androidx.compose.animation.core.rememberInfiniteTransition(label = "rec")
-            tr.animateFloat(1f, 0.35f, androidx.compose.animation.core.infiniteRepeatable(androidx.compose.animation.core.tween(700), androidx.compose.animation.core.RepeatMode.Reverse), label = "recA").value
+            tr.animateFloat(1f, 0.35f, androidx.compose.animation.core.infiniteRepeatable<Float>(androidx.compose.animation.core.tween<Float>(700), androidx.compose.animation.core.RepeatMode.Reverse), label = "recA").value
         } else 1f
         Canvas(Modifier.size(s).graphicsLayer { alpha = blink }) {
             drawIntoCanvas { ButtonArt.draw(it.nativeCanvas, kind, Prefs.btnStyle.value, size.toPx() * Prefs.btnScale.value, colour.toArgb(), pressed, glow) }
