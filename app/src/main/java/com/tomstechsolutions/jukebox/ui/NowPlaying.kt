@@ -120,7 +120,7 @@ fun NowPlayingScreen(act: MainActivity, th: JTheme, embedded: Boolean, onClose: 
             }
             Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text(Core.title.value.ifBlank { "Tom's Jukebox" }, color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(Core.title.value.ifBlank { "Tom's Jukebox" }, color = Color.White, fontSize = 22.sp, fontFamily = AppFonts.title(), fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     Text(listOf(Core.artist.value, Core.album.value).filter { it.isNotBlank() }.joinToString("  ·  "), color = Color(0xFFE8DCD0), fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     if (Core.format.value.isNotBlank() && !short) Text(Core.format.value, color = Color(0xFFB8A99C), fontSize = 12.sp)
                 }
@@ -275,7 +275,7 @@ fun DrivingScreen(th: JTheme, onClose: () -> Unit) {
                 IconBtn(Gl.close, Color.White, 32.dp) { onClose() }
             }
             Spacer(Modifier.weight(1f))
-            Text(Core.title.value.ifBlank { "Tom's Jukebox" }, color = Color.White, fontSize = 34.sp, fontWeight = FontWeight.Bold, maxLines = 2, textAlign = TextAlign.Center)
+            Text(Core.title.value.ifBlank { "Tom's Jukebox" }, color = Color.White, fontSize = 34.sp, fontFamily = AppFonts.title(), fontWeight = FontWeight.Bold, maxLines = 2, textAlign = TextAlign.Center)
             Text(Core.artist.value, color = Color(0xFFBBBBBB), fontSize = 22.sp, maxLines = 1, textAlign = TextAlign.Center)
             Spacer(Modifier.height(30.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {

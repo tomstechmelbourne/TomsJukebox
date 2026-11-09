@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -13,6 +14,8 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -80,6 +83,36 @@ fun MoreExtras(act: MainActivity, th: JTheme) {
         Text(t("Double-tap an empty spot on the lock screen to put the pill back at the bottom.", "Nhấp 2 lần vào chỗ trống trên màn hình khoá để đưa viên thuốc về dưới cùng."), color = th.muted, fontSize = 12.sp)
     }
 
+    SectionTitle(t("Fonts", "Font Chữ"), th)
+    Card(th) {
+        val ctx = androidx.compose.ui.platform.LocalContext.current
+        var tick by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(0) }
+        val pick = androidx.activity.compose.rememberLauncherForActivityResult(androidx.activity.result.contract.ActivityResultContracts.OpenDocument()) { uri ->
+            if (uri != null) { val k = AppFonts.import(ctx, uri); if (k != null) { Prefs.fontTitle.value = k; tick++ }
+                else com.tomstechsolutions.jukebox.data.Messages.add(t("That file isn't a font (.ttf / .otf).", "File này không phải font (.ttf / .otf).")) }
+        }
+        val fonts = androidx.compose.runtime.remember(tick) { AppFonts.all(ctx) }
+        for ((which, label, pref) in listOf(Triple(0, t("Titles & song names", "Font tiêu đề & tên bài"), Prefs.fontTitle), Triple(1, t("Normal text", "Font chữ thường"), Prefs.fontBody))) {
+            Text(label + ": " + AppFonts.name(pref.value), color = th.text, fontSize = 14.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold)
+            androidx.compose.foundation.lazy.LazyRow(Modifier.padding(vertical = 4.dp)) {
+                items(fonts.size) { i -> val f = fonts[i]; val on = pref.value == f.key
+                    androidx.compose.foundation.layout.Column(Modifier.padding(end = 6.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(14.dp))
+                        .background(if (on) th.accent.copy(alpha = 0.25f) else th.card)
+                        .androidx_combined({ pref.value = f.key }, { if (f.key.startsWith("file:")) { AppFonts.remove(ctx, f.key); tick++ } }).padding(horizontal = 12.dp, vertical = 8.dp)) {
+                        Text(if (which == 0) "Thạch Trắng" else "Chè đậu xanh", color = if (on) th.accent else th.text, fontSize = 20.sp, fontFamily = AppFonts.family(f.key), maxLines = 1)
+                        Text(t(f.en, f.vi), color = th.muted, fontSize = 10.sp, maxLines = 1)
+                    }
+                }
+            }
+        }
+        Text(t("Preview:", "Xem trước:"), color = th.muted, fontSize = 12.sp)
+        Text("Tom's Jukebox – Hiền Khánh 718", color = th.text, fontSize = 24.sp, fontFamily = AppFonts.title())
+        Text("Thạch trắng, chè đậu xanh thơm ngon tinh khiết", color = th.text, fontSize = 15.sp, fontFamily = AppFonts.body())
+        Row { Btn(t("+ Add Font From Phone", "+ Thêm Font Từ Điện Thoại"), th, primary = true) { pick.launch(arrayOf("font/*", "application/x-font-ttf", "application/x-font-otf", "application/octet-stream", "*/*")) } }
+        Text(t("\"Saigon 1985\" sign-painting fonts by Thái Hiệu (Fontzin). Long-press a font you added to remove it.",
+            "Bộ font biển hiệu Sài Gòn xưa \"Saigon 1985\" do Thái Hiệu (Fontzin) thiết kế. Nhấn giữ font tự thêm để xoá."), color = th.muted, fontSize = 11.sp)
+    }
+
     SectionTitle(t("Record Button", "Nút Thâu Âm"), th)
     Card(th) {
         Text(t("Design (tap to choose):", "Kiểu nút (nhấn để chọn):"), color = th.text, fontSize = 14.sp)
@@ -129,3 +162,6 @@ fun MoreExtras(act: MainActivity, th: JTheme) {
     }
 
 }
+
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+private fun Modifier.androidx_combined(onClick: () -> Unit, onLong: () -> Unit): Modifier = this.then(Modifier.combinedClickable(onClick = onClick, onLongClick = onLong))

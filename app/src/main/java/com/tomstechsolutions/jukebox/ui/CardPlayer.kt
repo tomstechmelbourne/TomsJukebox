@@ -205,7 +205,7 @@ fun CardPlayer(modifier: Modifier = Modifier, compact: Boolean, onOpen: () -> Un
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
                 Image(painterResource(R.drawable.app_logo), null, Modifier.size(22.dp).clip(CircleShape))
                 Spacer(Modifier.width(8.dp))
-                Text(Core.title.value.ifBlank { "Tom's Jukebox" }, color = Color.White, fontSize = if (compact) 18.sp else 20.sp, fontWeight = FontWeight.SemiBold,
+                Text(Core.title.value.ifBlank { "Tom's Jukebox" }, color = Color.White, fontSize = if (compact) 18.sp else 20.sp, fontFamily = AppFonts.title(), fontWeight = FontWeight.SemiBold,
                     maxLines = 1, modifier = Modifier.weight(1f, fill = false).basicMarquee())
             }
             Column {
@@ -232,7 +232,7 @@ fun LockCard(modifier: Modifier = Modifier) {
                 Image(painterResource(R.drawable.app_logo), null, Modifier.size(96.dp)) }
             Box(Modifier.fillMaxWidth().height(80.dp).align(Alignment.BottomCenter).background(Brush.verticalGradient(listOf(Color.Transparent, Color(0xCC000000)))))
             Column(Modifier.align(Alignment.BottomStart).padding(horizontal = 14.dp, vertical = 10.dp)) {
-                Text(Core.title.value.ifBlank { "Tom's Jukebox" }, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold, maxLines = 1, modifier = Modifier.basicMarquee())
+                Text(Core.title.value.ifBlank { "Tom's Jukebox" }, color = Color.White, fontSize = 20.sp, fontFamily = AppFonts.title(), fontWeight = FontWeight.Bold, maxLines = 1, modifier = Modifier.basicMarquee())
                 if (Core.artist.value.isNotBlank()) Text(Core.artist.value, color = Color(0xFFE0E0E0), fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }

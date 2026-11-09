@@ -169,7 +169,7 @@ fun PodcastScreen(th: JTheme) {
             Btn(t("Hide", "Ẩn"), th) { selected.values.forEach { PodStore.hide(it) }; selecting = false; selected = emptyMap() }
             Btn("⬇", th) { scope.launch { selected.values.forEach { val r = try { Podcasts.resolve(it) } catch (_: Exception) { it }; if (r.feed.isNotBlank() && !PodStore.autoDlOn(r)) PodStore.toggleAutoDl(ctx, r) }; selecting = false; selected = emptyMap() } }
             IconBtn(Gl.close, th.text) { selecting = false; selected = emptyMap() }
-        } else Text("Podcast", color = th.text, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+        } else Text("Podcast", color = th.text, fontSize = 28.sp, fontFamily = AppFonts.title(), fontWeight = FontWeight.Bold)
         SearchBox(query, t("Search podcasts (e.g. SBS Vietnamese)", "Tìm podcast (vd. SBS Tiếng Việt)"), th) { query = it }
         if (query.length >= 2) Btn(t("Search", "Tìm"), th, Gl.search, primary = true) {
             busy = true

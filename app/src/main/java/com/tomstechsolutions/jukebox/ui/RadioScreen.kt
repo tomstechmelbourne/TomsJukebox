@@ -67,7 +67,7 @@ fun RadioScreen(act: MainActivity, th: JTheme) {
 
     if (act.openRecordings.value) { RecordingsScreen(act, th) { act.openRecordings.value = false }; return }
     Column(Modifier.fillMaxSize().padding(horizontal = 14.dp)) {
-        Text("Radio", color = th.text, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+        Text("Radio", color = th.text, fontSize = 28.sp, fontFamily = AppFonts.title(), fontWeight = FontWeight.Bold)
         // SBS Tiếng Việt card
         Card(th) {
             Row(verticalAlignment = Alignment.CenterVertically) {

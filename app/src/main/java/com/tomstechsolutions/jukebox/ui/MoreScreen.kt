@@ -87,7 +87,7 @@ fun MoreScreen(act: MainActivity, th: JTheme) {
     }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 14.dp)) {
-        Text(t("More", "Thêm"), color = th.text, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+        Text(t("More", "Thêm"), color = th.text, fontSize = 28.sp, fontFamily = AppFonts.title(), fontWeight = FontWeight.Bold)
         if (toast.isNotBlank()) Card(th) { Text(toast, color = th.accent) }
 
         // ---------- looks ----------

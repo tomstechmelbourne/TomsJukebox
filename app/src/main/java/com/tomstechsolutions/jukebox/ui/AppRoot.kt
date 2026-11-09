@@ -74,7 +74,9 @@ fun JukeboxApp(act: MainActivity) {
     else darkColorScheme(primary = th.accent, background = th.top, surface = Color(0xFF16242E), onSurface = th.text)
     val d = LocalDensity.current
     CompositionLocalProvider(LocalDensity provides Density(d.density, d.fontScale * Prefs.textScale.state.value)) {
-        MaterialTheme(colorScheme = scheme) { AppBody(act, th) }
+        MaterialTheme(colorScheme = scheme) {
+            androidx.compose.material3.ProvideTextStyle(androidx.compose.material3.LocalTextStyle.current.copy(fontFamily = AppFonts.body())) { AppBody(act, th) }
+        }
     }
 }
 

@@ -108,7 +108,7 @@ fun LibraryScreen(act: MainActivity, th: JTheme) {
     }
 
     Column(Modifier.fillMaxSize().padding(horizontal = 14.dp)) {
-        Text(t("Library", "Thư Viện"), color = th.text, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+        Text(t("Library", "Thư Viện"), color = th.text, fontSize = 28.sp, fontFamily = AppFonts.title(), fontWeight = FontWeight.Bold)
         if (!act.audioAllowed.value) {
             Card(th) {
                 Text(t("Tom's Jukebox needs permission to see the music on this phone.", "Tom's Jukebox cần quyền để xem nhạc trên điện thoại."), color = th.text)

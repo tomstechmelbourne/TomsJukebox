@@ -53,7 +53,7 @@ fun EqScreen(act: MainActivity, th: JTheme) {
         Prefs.eqBands.value = g.joinToString(","); Prefs.eqPreset.value = "manual"; Core.service?.eq?.apply()
     }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 14.dp)) {
-        Text(t("Sound", "Chỉnh Âm"), color = th.text, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+        Text(t("Sound", "Chỉnh Âm"), color = th.text, fontSize = 28.sp, fontFamily = AppFonts.title(), fontWeight = FontWeight.Bold)
         SwitchRow(t("Equaliser On", "Bật Bộ Chỉnh Âm"), th, Prefs.eqOn.value) { Prefs.eqOn.value = it; Core.service?.eq?.apply() }
         Card(th) {
             Row(Modifier.fillMaxWidth().height(200.dp)) {

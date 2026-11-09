@@ -240,7 +240,7 @@ fun Pill(modifier: Modifier = Modifier, big: Boolean, onOpen: () -> Unit = {}, o
                     Disc(discSize, clock)
                     Spacer(Modifier.width(10.dp))
                     Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(title, color = st.text, fontSize = 17.sp, fontWeight = FontWeight.Bold, maxLines = 1, textAlign = TextAlign.Center,
+                        Text(title, color = st.text, fontSize = 17.sp, fontFamily = AppFonts.title(), fontWeight = FontWeight.Bold, maxLines = 1, textAlign = TextAlign.Center,
                             modifier = Modifier.fillMaxWidth().basicMarquee())
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
                             Text(listOf(sub, Core.format.value).filter { it.isNotBlank() }.joinToString("  ·  "), color = st.sub, fontSize = 12.sp, maxLines = 1,
@@ -268,7 +268,7 @@ fun Pill(modifier: Modifier = Modifier, big: Boolean, onOpen: () -> Unit = {}, o
                     Disc(h - if (slim) 10.dp else 14.dp, clock)
                     Spacer(Modifier.width(8.dp))
                     Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(title, color = st.text, fontSize = 14.sp, fontWeight = FontWeight.Bold, maxLines = 1, textAlign = TextAlign.Center,
+                        Text(title, color = st.text, fontSize = 14.sp, fontFamily = AppFonts.title(), fontWeight = FontWeight.Bold, maxLines = 1, textAlign = TextAlign.Center,
                             modifier = Modifier.fillMaxWidth().basicMarquee())
                         if (!slim) Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
                             Text(sub, color = st.sub, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center, modifier = Modifier.weight(1f, fill = false))
@@ -289,7 +289,7 @@ fun Pill(modifier: Modifier = Modifier, big: Boolean, onOpen: () -> Unit = {}, o
                         Disc(disc, clock)
                         Spacer(Modifier.width(10.dp))
                         Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(title, color = st.text, fontSize = if (large) 17.sp else 15.sp, fontWeight = FontWeight.Bold, maxLines = 1, textAlign = TextAlign.Center,
+                            Text(title, color = st.text, fontSize = if (large) 17.sp else 15.sp, fontFamily = AppFonts.title(), fontWeight = FontWeight.Bold, maxLines = 1, textAlign = TextAlign.Center,
                                 modifier = Modifier.fillMaxWidth().basicMarquee())
                             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
                                 Text(if (large) listOf(sub, Core.format.value).filter { it.isNotBlank() }.joinToString("  ·  ") else sub, color = st.sub, fontSize = 12.sp, maxLines = 1,

@@ -142,6 +142,8 @@ object Prefs {
     val podNew = p("pod_new", "")                 // feed có tập mới chưa mở (chấm đỏ trên widget)
     val radioFavs = p("radio_favs", "")
     val podHQ = p("pod_hq", true)
+    val fontTitle = p("font_title", "default")    // font tiêu đề + tên bài
+    val fontBody = p("font_body", "default")      // font chữ thường
     val recStyle = p("rec_style", 1)              // kiểu nút thâu (0 = theo bộ nút)
     val recColour = p("rec_colour", "red")
     val recCustom = p("rec_custom", 0xFFFF3B3B.toInt())

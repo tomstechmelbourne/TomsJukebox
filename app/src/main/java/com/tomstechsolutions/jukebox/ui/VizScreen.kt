@@ -63,7 +63,7 @@ fun FullViz(onClose: () -> Unit) {
                         Text("${Prefs.viz.value + 1} / $n", color = Color(0xFFBBBBBB), fontSize = 12.sp)
                     }
                     val fav = Motifs.isFav("viz", "v:${Prefs.viz.value}")
-                    Text(if (fav) "★" else "☆", color = Color(0xFFFFD54F), fontSize = 28.sp, modifier = Modifier.clip(RoundedCornerShape(20.dp))
+                    Text(if (fav) "★" else "☆", color = Color(0xFFFFD54F), fontSize = 28.sp, fontFamily = AppFonts.title(), modifier = Modifier.clip(RoundedCornerShape(20.dp))
                         .pointerInput(Prefs.viz.value) { detectTapGestures { Motifs.toggleFav("viz", "v:${Prefs.viz.value}"); touched = System.currentTimeMillis() } }.padding(10.dp))
                 }
                 Spacer(Modifier.weight(1f))
