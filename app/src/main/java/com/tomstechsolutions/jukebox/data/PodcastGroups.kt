@@ -22,8 +22,11 @@ object PodcastGroups {
         // 7News Just In · 9News · ABC News Daily · ABC AM · ABC PM · ABC The World Today · SBS News In Depth · The Morning Edition (The Age) ·
         // The Splash (Herald Sun) · That's ACA (A Current Affair) · LiSTNR Melbourne Local News · 3AW Mornings · The Conversation Hour (ABC Melbourne)
         // (10 News: không còn podcast tin tức nào đang cập nhật)
-        PodGroup("aunews", "Australian News", "Tin Tức Úc", listOf("1713274928", "1896828280", "1349523628", "297778503", "297778504", "297778505", "73329715",
+        PodGroup("aunews", "Australian News", "Tin Tức Úc", listOf("1713274928", "1896828280", "1349523628", "297778503", "297778504", "297778505", "73329715", "1527948302",
             "1436450976", "1444390972", "1821376327", "1775573992", "291212440", "92455788"), news = true),
+        // Hài Úc: Have You Been Paying Attention? (kênh 10) · The Stand 10 For 10 · ABC COMEDY Presents · Nat & Shaun with Joel Creasey · Get Around Me (Billy D'Arcy)
+        // (SBS ONE và 10 Comedy là kênh truyền hình, không có podcast hay luồng nghe riêng)
+        PodGroup("comedy", "Australian Comedy", "Hài Kịch Úc", listOf("1121926361", "1852311207", "1459332175", "350709505", "1455446173"), news = true),
         // triple j J Files · Like A Version · Double J · ABC The Music Show · ABC Classics · Song Exploder · SBS Giọng Ca Việt Úc · RFI Tạp chí Âm Nhạc · Thánh Ca Dòng Xitô
         PodGroup("music", "Music", "Âm Nhạc", listOf("919801673", "364978669", "1441212236", "156556864", "1535418229", "788236947", "1868596227", "1495217848", "1516748346")),
         // ABC Kids Listen: Play School · Story Salad · Little Yarns · ABC Classic Kids · Noisy by Nature · Short & Curly ·
