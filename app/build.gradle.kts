@@ -1,3 +1,4 @@
+import java.util.Properties
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -6,6 +7,8 @@ plugins {
 
 // Android 17 = API 37. CI passes the highest platform it can install (-Ptj.sdk=37).
 val tjSdk = (project.findProperty("tj.sdk") as String?)?.toIntOrNull() ?: 36
+
+val signProps = Properties().apply { val f = file("signing.properties"); if (f.exists()) f.inputStream().use { load(it) } }
 
 android {
     namespace = "com.tomstechsolutions.jukebox"
@@ -20,7 +23,6 @@ android {
         vectorDrawables { useSupportLibrary = true }
     }
 
-    val signProps = java.util.Properties().apply { val f = file("signing.properties"); if (f.exists()) f.inputStream().use { load(it) } }
     signingConfigs {
         create("release") {
             storeFile = file("tomsjukebox.keystore")
