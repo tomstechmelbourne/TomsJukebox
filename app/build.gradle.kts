@@ -20,23 +20,26 @@ android {
         vectorDrawables { useSupportLibrary = true }
     }
 
+    val signProps = java.util.Properties().apply { val f = file("signing.properties"); if (f.exists()) f.inputStream().use { load(it) } }
     signingConfigs {
         create("release") {
             storeFile = file("tomsjukebox.keystore")
-            storePassword = "***REMOVED***"
-            keyAlias = "tomsjukebox"
-            keyPassword = "***REMOVED***"
+            storePassword = signProps.getProperty("storePassword")
+            keyAlias = signProps.getProperty("keyAlias")
+            keyPassword = signProps.getProperty("keyPassword")
         }
     }
+    // the signing key is unpacked by the workflow from app/signing.enc (secret SIGN_SECRET); without it local builds use the debug key
+    val relSign = if (signProps.isEmpty) signingConfigs.getByName("debug") else signingConfigs.getByName("release")
 
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = signingConfigs.getByName("release")
+            signingConfig = relSign
         }
-        debug { signingConfig = signingConfigs.getByName("release") }
+        debug { signingConfig = relSign }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

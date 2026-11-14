@@ -30,6 +30,12 @@ jobs:
           fi
           ls $ANDROID_HOME/platforms
           echo "sdk=37" >> $GITHUB_OUTPUT
+      - name: Unpack signing key
+        env:
+          SIGN_SECRET: ${{ secrets.SIGN_SECRET }}
+        run: |
+          if [ -z "$SIGN_SECRET" ]; then echo "::error::Missing repository secret SIGN_SECRET"; exit 1; fi
+          openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in app/signing.enc -pass env:SIGN_SECRET | tar -x -C app
       - uses: gradle/actions/setup-gradle@v4
       - name: Build release APK (API 37, falls back to 36)
         run: |
