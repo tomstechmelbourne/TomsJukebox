@@ -68,6 +68,7 @@ class CarBridge : BroadcastReceiver() {
                 val eps = if (p != null) try { Podcasts.episodes(p) } catch (_: Exception) { emptyList() } else emptyList()
                 ({ eps.firstOrNull()?.let { Core.playEpisode(it) } })
             }
+            "record" -> ({ if (Core.recording.value) Core.stopRecording() else if (Core.kind.value == "radio" || Core.kind.value == "podcast") Core.startRecording() })
             else -> ({ Core.controller?.let { c -> if (c.playbackState == androidx.media3.common.Player.STATE_IDLE) c.prepare(); c.play() } })
         }
         kotlinx.coroutines.withContext(Dispatchers.Main) { Core.whenReady(ctx) { run() } }
