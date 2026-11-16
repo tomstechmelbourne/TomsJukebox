@@ -5,7 +5,7 @@ import subprocess
 import time
 from datetime import datetime
 
-from PySide6.QtCore import QSize, Qt, QTimer
+from PySide6.QtCore import QEvent, QSize, Qt, QTimer
 from PySide6.QtGui import QColor, QLinearGradient, QPainter, QBrush
 from PySide6.QtWidgets import (QAbstractItemView, QComboBox, QFrame, QHBoxLayout, QHeaderView, QInputDialog,
                                QLabel, QLineEdit, QListWidget, QListWidgetItem, QMenu, QMessageBox, QProgressBar,
@@ -182,7 +182,70 @@ class CDPage(Page):
 
 
 # =========================================================================== Radio
-class RadioPage(Page):
+class ScrollPage(Page):
+    """Page whose content scrolls when the window is short or the text is big."""
+
+    def _fit_flows(self):
+        for w, f in getattr(self, "_flows", ()):
+            if w.width() > 0:
+                w.setMinimumHeight(f.heightForWidth(w.width()))
+
+    def resizeEvent(self, e):
+        super().resizeEvent(e)
+        QTimer.singleShot(0, self._fit_flows)
+
+    def changeEvent(self, e):
+        super().changeEvent(e)
+        if e.type() in (QEvent.FontChange, QEvent.StyleChange, QEvent.LanguageChange):
+            QTimer.singleShot(0, self._fit_flows)
+
+    def showEvent(self, e):
+        super().showEvent(e)
+        QTimer.singleShot(0, self._fit_flows)
+
+    def _wrap_scroll(self):
+        # Short window or big text: the whole page scrolls instead of squashing the lists.
+        inner = QWidget()
+        inner.setObjectName("PageInner")
+        il = QVBoxLayout(inner)
+        old = self.lay
+        il.setContentsMargins(old.contentsMargins())
+        il.setSpacing(old.spacing())
+        stretches = [old.stretch(i) for i in range(old.count())]
+        for st in stretches:
+            item = old.takeAt(0)
+            if item.widget() is not None:
+                il.addWidget(item.widget(), st)
+            elif item.layout() is not None:
+                lay = item.layout()
+                lay.setParent(None)
+                il.addLayout(lay, st)
+            else:
+                il.addItem(item)
+        sc = QScrollArea()
+        sc.setWidgetResizable(True)
+        sc.setFrameShape(QScrollArea.NoFrame)
+        sc.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        sc.setWidget(inner)
+        sc.setStyleSheet("QScrollArea{background:transparent}")
+        sc.viewport().setAutoFillBackground(False)
+        inner.setAutoFillBackground(False)
+        inner.setStyleSheet("#PageInner{background:transparent}")
+        old.setContentsMargins(0, 0, 0, 0)
+        old.addWidget(sc)
+        self.lay = il
+        self._sc, self._inner = sc, inner
+        sc.viewport().installEventFilter(self)
+
+    def eventFilter(self, obj, e):
+        # Never wider than the window: rows squeeze like before, only height scrolls.
+        sc = getattr(self, "_sc", None)
+        if sc is not None and obj is sc.viewport() and e.type() == QEvent.Resize:
+            self._inner.setMaximumWidth(max(200, sc.viewport().width()))
+        return super().eventFilter(obj, e)
+
+
+class RadioPage(ScrollPage):
     TABS = ["r_favs", "r_nearby", "r_au", "r_vn", "r_vn_au", "r_search", "r_mine"]
 
     def __init__(self, ctx):
@@ -253,13 +316,17 @@ class RadioPage(Page):
             self.tabs.addTab(w, tr(key))
         self.tabs.currentChanged.connect(lambda *_: self.load_tab())
         self.lay.addWidget(self.tabs, 1)
-        act = QHBoxLayout()
+        from .lookpage import FlowLayout
+        actw = QWidget()
+        act = FlowLayout(actw, 6)
+        self._flows = [(actw, act)]
         self.b_play = QPushButton(icon("play", theme.c("on_accent"), 18), tr("play"))
         self.b_play.setObjectName("Primary")
         self.b_play.clicked.connect(lambda: self.play_item(self.cur_list().currentItem()))
         self.b_rec = QPushButton(icon("record", "#E5484D", 18), tr("r_record"))
         self.b_rec.clicked.connect(self.record_selected)
         self.fmt = QComboBox()
+        self.fmt.setSizeAdjustPolicy(QComboBox.AdjustToContents)
         for k, v in recorder.FORMATS.items():
             self.fmt.addItem(v[1] if lang() == "vi" else v[0], k)
         self.fmt.setCurrentIndex(max(0, self.fmt.findData(self.db.get("rec_fmt"))))
@@ -270,11 +337,12 @@ class RadioPage(Page):
         act.addWidget(self.b_rec)
         act.addWidget(self.fmt)
         act.addWidget(self.b_fav)
-        act.addStretch()
         self.qnote = hint(tr("r_quality_note"))
         self.qnote.setWordWrap(True)
-        self.lay.addLayout(act)
+        self.tabs.setMinimumHeight(300)
+        self.lay.addWidget(actw)
         self.lay.addWidget(self.qnote)
+        self._wrap_scroll()
         self.remote = {}
         if not self.db.one("SELECT id FROM stations WHERE fav=1"):
             self.tabs.setCurrentIndex(self.TABS.index("r_au"))
@@ -566,7 +634,7 @@ class RadioPage(Page):
 
 
 # =========================================================================== Podcasts
-class PodcastsPage(Page):
+class PodcastsPage(ScrollPage):
     def __init__(self, ctx):
         super().__init__(ctx)
         self.header("nav_podcasts", [("p_refresh", "refresh", self.check_all, False)])
@@ -681,50 +749,6 @@ class PodcastsPage(Page):
         self._wrap_scroll()
         self.downloading = set()
 
-    def _fit_flows(self):
-        for w, f in getattr(self, "_flows", ()):
-            if w.width() > 0:
-                w.setMinimumHeight(f.heightForWidth(w.width()))
-
-    def resizeEvent(self, e):
-        super().resizeEvent(e)
-        QTimer.singleShot(0, self._fit_flows)
-
-    def showEvent(self, e):
-        super().showEvent(e)
-        QTimer.singleShot(0, self._fit_flows)
-
-    def _wrap_scroll(self):
-        # Short window or big text: the whole page scrolls instead of squashing the lists.
-        inner = QWidget()
-        inner.setObjectName("PageInner")
-        il = QVBoxLayout(inner)
-        old = self.lay
-        il.setContentsMargins(old.contentsMargins())
-        il.setSpacing(old.spacing())
-        stretches = [old.stretch(i) for i in range(old.count())]
-        for st in stretches:
-            item = old.takeAt(0)
-            if item.widget() is not None:
-                il.addWidget(item.widget(), st)
-            elif item.layout() is not None:
-                lay = item.layout()
-                lay.setParent(None)
-                il.addLayout(lay, st)
-            else:
-                il.addItem(item)
-        sc = QScrollArea()
-        sc.setWidgetResizable(True)
-        sc.setFrameShape(QScrollArea.NoFrame)
-        sc.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        sc.setWidget(inner)
-        sc.setStyleSheet("QScrollArea{background:transparent}")
-        sc.viewport().setAutoFillBackground(False)
-        inner.setAutoFillBackground(False)
-        inner.setStyleSheet("#PageInner{background:transparent}")
-        old.setContentsMargins(0, 0, 0, 0)
-        old.addWidget(sc)
-        self.lay = il
 
     def retranslate(self):
         super().retranslate()
