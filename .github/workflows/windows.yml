@@ -23,6 +23,7 @@ jobs:
       - name: Selftest (source) with screenshots
         env:
           QT_QPA_PLATFORM: offscreen
+          QT_QPA_FONTDIR: C:\\Windows\\Fonts
         run: python main.py --demo --selftest --shots ..\shots
       - name: PyInstaller
         run: python -m PyInstaller --noconfirm --clean --windowed --name TomsJukebox --icon assets\app_icon.ico --version-file version_info.txt --add-data "assets;assets" --collect-all av --collect-all sounddevice --collect-submodules scipy.signal --collect-submodules winrt --hidden-import comtypes.client --hidden-import tomsjukebox.selftest --hidden-import tomsjukebox.demo --collect-submodules tomsjukebox main.py
