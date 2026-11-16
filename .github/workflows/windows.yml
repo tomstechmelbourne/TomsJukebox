@@ -3,6 +3,8 @@ on:
   push:
     branches: [windows]
   workflow_dispatch:
+permissions:
+  contents: write
 jobs:
   build:
     runs-on: windows-latest
@@ -64,3 +66,12 @@ jobs:
         with:
           name: shots
           path: shots
+      - name: Publish to winbuild branch
+        shell: bash
+        working-directory: .
+        run: |
+          mkdir -p /tmp/pub && cp windows/Output/*.exe /tmp/pub/ && mkdir -p /tmp/pub/shots
+          for f in shots/vi_*_A0_now.png shots/vi_*_A0_look.png shots/vi_tts_A2_*.png shots/vi_soft_A2_podcasts.png shots/*mini*.png shots/*picker*.png; do [ -f "$f" ] && cp "$f" /tmp/pub/shots/; done
+          cd /tmp/pub && git init -q -b winbuild && git add -A
+          git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -q -m "Windows build ${{ github.sha }}"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" winbuild
