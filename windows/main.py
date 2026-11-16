@@ -5,6 +5,12 @@ import traceback
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+for _s in (sys.stdout, sys.stderr):  # Vietnamese text must never crash a Windows console
+    try:
+        _s.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 from tomsjukebox import app_info  # noqa: E402
 
 
