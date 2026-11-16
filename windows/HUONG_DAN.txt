@@ -1,0 +1,178 @@
+TOM'S JUKEBOX 0.9.6-beta (Windows)
+One of Tom's Technology Solutions Products
+Focus On One Thing And Do It Well
+==========================================================
+
+Tom's Jukebox là chương trình nghe nhạc cho Windows: thư viện nhạc trên ổ trong và ổ gắn ngoài,
+đĩa CD, radio Úc & Việt Nam, thu âm radio, podcast. Từ bản 0.9.6 bản Windows có đủ các tính năng
+của bản Android, trong một cửa sổ nhỏ gọn kiểu jetAudio / Winamp.
+
+
+CÁCH CÀI (CÁCH DỄ NHẤT)
+-----------------------
+1. Chạy TomsJukebox-0.9.6-beta-Setup.exe, bấm Next tới Finish.
+   - Có lối tắt ngoài Desktop và trong Start Menu.
+   - Windows có thể hiện "Windows protected your PC" vì chương trình chưa ký số:
+     bấm "More info" rồi "Run anyway".
+2. Đang có bản cũ thì cứ cài đè lên: thư viện, playlist, bản thu, cài đặt giữ nguyên.
+3. Gỡ chương trình (Settings › Apps, hoặc Start Menu › Uninstall Tom's Jukebox) KHÔNG xóa dữ liệu
+   của Tom. Muốn xóa hẳn thì tự xóa thư mục %APPDATA%\Tom's Jukebox.
+
+CÁCH CÀI TỪ MÃ NGUỒN (file zip, giống các bản trước)
+---------------------------------------------------
+1. Giải nén TomsJukebox-0.9.6-beta.zip ra MỘT THƯ MỤC MỚI.
+2. Chạy cai_dat.bat (một lần), rồi mở bằng lối tắt "Tom's Jukebox" ngoài Desktop hoặc chay.bat.
+   - chay_demo.bat: mở với nhạc mẫu, dữ liệu riêng.  - chay_kiem_loi.bat: mở kèm cửa sổ đen để xem lỗi.
+   - build_exe.bat: đóng gói thành TomsJukebox.exe.
+
+
+CÓ GÌ MỚI Ở BẢN 0.9.6-beta
+--------------------------
+Cửa Sổ Mới
+- Chỉ còn một cửa sổ nhỏ gọn kiểu jetAudio / Winamp (bỏ cửa sổ lớn), kéo nhỏ / lớn được,
+  nhớ vị trí và kích thước. Không còn cửa sổ đen.
+- Thanh phát viên thuốc của Tom's Dock nằm ngay trong cửa sổ; kiểu thẻ "Mặc Định (Tom's Tech)"
+  là mặc định. Lăn chuột trên thanh phát để chỉnh âm lượng, bấm đúp để đổi màu.
+- Thanh menu kiểu Winamp: Tệp, Phát, Tùy Chọn, Xem, Trợ Giúp, khoảng 40 phím tắt
+  (Z X C V B = Bài Trước / Phát / Tạm Dừng / Dừng / Bài Kế, L = Mở File, J = Nhảy Tới Giờ,
+  R = Lặp, S = Trộn ...). Đổi phím tắt ở Trợ Giúp › Phím Tắt.
+- Nút Thêm Bài Hát (chọn file lẻ), Thêm Thư Mục, Quét Lại ngay trên thư viện.
+- Thay cho các tính năng chỉ có trên điện thoại: Trình Phát Mini luôn nổi, biểu tượng ở
+  khay hệ thống (gần đồng hồ) có menu phát, phím media trên bàn phím, ghim cửa sổ luôn nổi.
+
+Giao Diện (trang mới "Giao Diện")
+- 4 giao diện: Tom's Technology Solutions (mặc định), Kính Mờ, Mềm Mại, Tối. Bỏ Tương Phản Cao.
+- 70 Bộ Chủ Đề giống bản Android (lọc theo nhóm, ★ yêu thích bằng chuột phải, 🎲 ngẫu nhiên,
+  ↶ hoàn tác, xem trước trực tiếp), skin (có skin XP), 13 bộ nút, 16 kiểu nút thu âm,
+  28 kiểu viền sáng có chỉnh tốc độ, màu tự chọn, hiệu ứng khi bấm tab, hiệu ứng mở chương trình.
+- 83 kiểu Hình Ảnh Theo Nhạc (F11 toàn màn hình, ↑ ↓ đổi kiểu).
+- Phông chữ Sài Gòn 1985 (10 kiểu) và thêm phông của Tom. Chữ TOM'S JUKEBOX luôn giữ nguyên kiểu.
+- Màu luôn đúng dù Windows để sáng hay tối; nét ở màn hình phóng to 150–200%.
+
+Âm Thanh
+- 30 kiểu Chỉnh Âm như bản Android, và Tự Chọn Theo Thể Loại (Bolero, Rock, Jazz...).
+- Hẹn Giờ Tắt: sau số phút, hết bài, hoặc hết hàng đợi, nhỏ dần trước khi tắt.
+
+Radio & Podcast
+- 110 đài như bản Android (SBS Tiếng Việt phát thẳng, ABC từng bang, VOV, VOH...).
+- Podcast theo nhóm (Tin Tức Úc, Tiếng Việt...), tự lưu tập mới, bản chất lượng cao (HQ) khi
+  kênh có, Lưu Cả Tập 💾, Cắt Đoạn A–B ✂ (không nén lại), thu âm đoạn đang nghe bằng nút ●.
+- Trang podcast hiện 300 tập mới nhất; báo khi kênh lâu không có tập mới.
+
+
+CÁC TÍNH NĂNG TỪ BẢN 0.9.0-beta
+-----------------------------------------
+Thư Viện Nhạc
+- Thêm thư mục nhạc (ổ trong, ổ cứng gắn ngoài, nhiều ổ cùng lúc). Tự quét và tự cập nhật.
+- Ổ ngoài chưa cắm: bài vẫn nằm trong thư viện, hiện màu xám; cắm lại là sáng lên, kể cả khi
+  Windows đổi ký tự ổ (E: thành F:). Cắm ổ vào là chương trình tự quét bài mới.
+- Xem theo Bài Hát, Album (lưới ảnh bìa), Nghệ Sĩ, Thể Loại, Thư Mục, Playlist, Yêu Thích ★.
+- Tìm nhanh ở ô tìm kiếm trên cùng (Ctrl+F).
+- Định dạng: MP3, AAC/M4A, ALAC, FLAC (cả 24-bit), WAV, OGG, Opus, WMA, AIFF...
+
+Phát Nhạc
+- Thanh phát viên thuốc kiểu Samsung, đĩa xoay, sóng nhạc. Thanh thời gian nằm trên rãnh tối riêng,
+  nút kéo luôn hiện. 11 màu thanh phát (chuột phải lên thanh, hoặc Cài Đặt › Chung).
+- Phát liền mạch giữa các bài của album, chuyển bài mượt (crossfade), cân bằng âm lượng (ReplayGain).
+- Bộ Chỉnh Âm 10 băng với kiểu có sẵn: Rock, Pop, Giọng Hát, Jazz, Cổ Điển, Tăng Bass, Tăng Treble,
+  Bolero / Nhạc Vàng, Loudness.
+- Hàng đợi, trộn bài, lặp lại, nhớ bài và chỗ đang nghe dở (mở lại bấm Phát là nghe tiếp).
+- Màn hình Đang Phát: ảnh bìa lớn, nền đổi màu theo ảnh bìa, Lời Bài Hát chạy theo nhạc, Hàng Đợi.
+- Phím Play/Pause/Next/Previous trên bàn phím laptop dùng được cả khi chương trình chạy nền.
+- Nút Bài Trước / Phát / Bài Kế khi rê chuột lên biểu tượng ở taskbar.
+- Trình Phát Mini luôn nổi (Ctrl+M).
+- Hình Ảnh Theo Nhạc Toàn Màn Hình (F11; Esc để thoát) - hợp khi nối laptop với TV.
+- Phát Ra TV / Loa Wi-Fi (DLNA) trong mạng nhà.
+
+Lời Bài Hát
+- Đọc file .lrc (hoặc .txt) cùng tên, cạnh file nhạc. Không có thì tìm online trên LRCLIB (tắt được).
+
+Sửa Thông Tin Bài
+- Sửa tên, nghệ sĩ, album, năm, số bài, ảnh bìa; sửa nhiều bài một lần.
+- Tìm Thông Tin Online (MusicBrainz) điền tự động, tải ảnh bìa từ Cover Art Archive.
+
+Đĩa CD
+- Cho đĩa CD nhạc vào ổ (cả ổ USB gắn ngoài) là phát được, có tên bài và ảnh bìa từ MusicBrainz.
+- Nút Rip Bằng Tom's Disc (mở Tom's Disc để chép sang FLAC). Chọn chỗ TomsDisc.exe trong
+  Cài Đặt › Liên Kết nếu chương trình chưa tự tìm thấy.
+
+Radio
+- Úc Châu: triple j, Double J, ABC Classic, ABC Jazz, ABC Country, ABC NewsRadio, ABC Radio National,
+  SBS Radio 1/2/3, SBS Chill, SBS PopAsia và ABC địa phương của từng bang.
+- Việt Nam: VOV1, VOV2, VOV3, VOV5, VOV Giao Thông Hà Nội / TP.HCM, VOH 99.9 / 95.6 / 87.7.
+- Đài Tiếng Việt Ở Úc, Tìm Đài (hàng chục nghìn đài), Đài Của Tom (tự thêm đài bằng địa chỉ), Đài Yêu Thích ★.
+- Đổi đài theo bang: chương trình biết Tom đang ở bang nào (Vị Trí của Windows, hoặc đoán theo mạng),
+  sang bang khác thì hỏi "Chuyển sang các đài ở Sydney?" - Tom chọn Chuyển hoặc Giữ Nguyên.
+  Chọn bang bằng tay thì chương trình giữ nguyên, không tự đổi. Về Victoria thì quay lại đài Melbourne.
+- Các đài toàn quốc và đài ★ không bị đổi.
+
+Thu Âm Radio
+- Bấm Thu Âm để thu đài đang chọn; Hẹn Giờ Thu theo ngày giờ (lặp hằng tuần hoặc một lần).
+- Định dạng: Giữ Nguyên Bản Gốc (tốt nhất, không nén lại), FLAC, WAV 24-bit, ALAC, MP3 320 kbps,
+  AAC 256 kbps, Opus 192 kbps.
+- Mạng rớt thì tự nối lại và thu tiếp. Máy không tự ngủ trong lúc thu.
+- Tùy chọn mỗi bài một file (khi đài có gửi tên bài). File thu xong tự vào mục Bản Thu Radio.
+- Lưu ý: bản thu không thể hay hơn chất lượng đài phát (cột Chất Lượng cho biết đài nào phát nét nhất).
+
+Podcast
+- Tìm podcast (nút nhanh SBS Tiếng Việt), Theo Dõi, tự tải tập mới, nhớ chỗ nghe dở.
+
+Playlist
+- Playlist thường, nhập / xuất .m3u.
+- Playlist Tự Động theo điều kiện: Nghe Nhiều Nhất, Thêm Trong 30 Ngày, FLAC Chưa Nghe Bao Giờ,
+  Yêu Thích, Lâu Chưa Nghe... hoặc tự đặt điều kiện.
+- Gửi Sang Tom's Dock: lưu playlist vào thư mục chung Tài Liệu\Tom's Technology Solutions\Gui Sang\Tom's Dock\Playlists
+  để Tom's Dock (bản 0.9.4) chép vào iPod.
+
+Dọn Thư Viện
+- Tìm Bài Trùng (kể cả khác ổ, khác định dạng) - chỉ hiện ra, không xóa gì, bản tốt nhất đứng đầu.
+- Kiểm Tra File Lỗi: file hỏng, thiếu ảnh bìa, thiếu thông tin, file FLAC giả (đổi từ MP3).
+  Bài nhạc xưa chép từ băng cũng có thể bị báo vì nguồn vốn ít âm cao - Tom nghe thử rồi quyết.
+
+Nối Với Các Chương Trình Khác
+- Tom's Reel: mở album thì thấy nhãn "Có trong bộ sưu tập: CD, Đĩa Than..." nếu Tom có đĩa đó.
+- Tom's Disc: nút Rip Bằng Tom's Disc ở trang Đĩa CD.
+- Tom's Dock: Gửi Sang Tom's Dock ở trang Playlist.
+
+Giao Diện & Quy Chuẩn Chung
+- Giao diện, cỡ chữ, EN / VI.
+- Cỡ chữ A / A+ / A++, EN / VI, nút Sáng / Tối. Tin Nhắn | Góp Ý | Phiên Bản ở góc dưới bên phải.
+- Sao Lưu / Khôi Phục trong Cài Đặt › Dữ Liệu; tự sao lưu mỗi 7 ngày, giữ 5 bản.
+- Hoàn Tác (Ctrl+Z) cho thêm/bớt playlist, đổi tên, xóa playlist, Yêu Thích.
+
+Phím Tắt (xem đủ và đổi ở Trợ Giúp › Phím Tắt, phím F1)
+- Z / X / C / V / B: Bài Trước / Phát / Tạm Dừng / Dừng / Bài Kế     ← →: lùi / tới 5 giây
+- L: Phát File   Ctrl+L: Phát Địa Chỉ URL   Ctrl+T: Hẹn Giờ Tắt   Ctrl+M: Trình Phát Mini
+- Ctrl+W: Chỉ Thanh Phát   Ctrl+A: Luôn Nằm Trên   F11: Hình Ảnh Theo Nhạc   Ctrl+R: Thâu
+
+
+DỮ LIỆU NẰM Ở ĐÂU
+-----------------
+- Thư viện, cài đặt, ảnh bìa thu nhỏ, lời bài hát: %APPDATA%\Tom's Jukebox
+  (bản demo: %APPDATA%\Tom's Jukebox Demo). File log: TomsJukebox.log trong thư mục đó.
+- Bản thu radio: Tài Liệu\Tom's Jukebox\Radio Recordings (đổi được trong Cài Đặt › Thu Âm).
+- Podcast đã tải: Tài Liệu\Tom's Jukebox\Podcasts.
+- Sao lưu: %APPDATA%\Tom's Jukebox\Backups (đổi sang OneDrive / USB trong Cài Đặt › Dữ Liệu).
+- Chương trình KHÔNG sửa hay xóa file nhạc của Tom, trừ khi Tom bấm Lưu ở Sửa Thông Tin Bài.
+
+
+
+PHẦN CHƯA THỬ ĐƯỢC TRÊN MÁY THẬT
+-------------------------------
+- Bộ cài Setup.exe và file .exe đã được build và tự kiểm tra trên máy Windows của GitHub
+  (không có loa, không có người bấm), CHƯA cài thử trên máy của Tom.
+- Loa / card âm thanh thật, ổ đĩa CD thật, phím media trên bàn phím, biểu tượng khay hệ thống.
+- Mạng thật: radio, podcast (nhóm, HQ, tự lưu), lời bài hát online, MusicBrainz, Phát Ra TV (DLNA).
+- Không tìm thấy kênh podcast của: BBC Tiếng Việt, Radio Chân Trời Mới, SBTN, Chân Lý Á Châu,
+  VietCatholic, VietVatican. Hiện không có podcast 10 News đang cập nhật.
+- Đã thử: 83 kiểu hình ảnh theo nhạc, 70 bộ chủ đề, 28 viền sáng, 13 bộ nút, các trang và cửa sổ,
+  cắt đoạn podcast A–B, chụp hình từng trang để soát chữ bị cắt.
+
+
+GHI CHÚ
+-------
+- Phông chữ Sài Gòn 1985: tác giả Thái Hiệu / Fontzin.
+- Giải mã âm thanh bằng FFmpeg (giấy phép LGPL) qua PyAV; xuất âm thanh bằng PortAudio.
+- Tên các đài và kênh podcast thuộc về đài phát. Winamp, jetAudio, Samsung là nhãn hiệu của chủ sở hữu.
+- Góp ý: bấm Góp Ý ở góc dưới bên phải (gửi tới tomstechmelbourne@gmail.com).
+- Bản kế tiếp chờ Tom gõ "Build".

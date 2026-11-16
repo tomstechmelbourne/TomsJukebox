@@ -1,0 +1,66 @@
+name: Windows build
+on:
+  push:
+    branches: [windows]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: windows
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-windows.txt pyinstaller
+      - name: Selftest (source) with screenshots
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python main.py --demo --selftest --shots ..\shots
+      - name: PyInstaller
+        run: python -m PyInstaller --noconfirm --clean --windowed --name TomsJukebox --icon assets\app_icon.ico --version-file version_info.txt --add-data "assets;assets" --collect-all av --collect-all sounddevice --collect-submodules scipy.signal --collect-submodules winrt --hidden-import comtypes.client --hidden-import tomsjukebox.selftest --hidden-import tomsjukebox.demo --collect-submodules tomsjukebox main.py
+      - name: Selftest (exe)
+        shell: pwsh
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          $p = Start-Process -FilePath "dist\TomsJukebox\TomsJukebox.exe" -ArgumentList "--demo","--selftest" -Wait -PassThru
+          Write-Host "exe selftest exit code: $($p.ExitCode)"
+          Get-ChildItem "$env:APPDATA" -Filter "*Jukebox*" -Directory | ForEach-Object { Get-Content (Join-Path $_.FullName "TomsJukebox.log") -Tail 40 -ErrorAction SilentlyContinue }
+          if ($p.ExitCode -ne 0) { exit 1 }
+      - name: Installer
+        shell: pwsh
+        run: |
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" installer\TomsJukebox.iss
+          Get-ChildItem Output
+      - name: Install test (silent install, run, uninstall keeps data)
+        shell: pwsh
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          $s = Get-ChildItem Output\*.exe | Select-Object -First 1
+          Start-Process $s.FullName -ArgumentList "/VERYSILENT","/SUPPRESSMSGBOXES","/NORESTART","/CURRENTUSER" -Wait
+          $exe = "$env:LOCALAPPDATA\Programs\Tom's Jukebox\TomsJukebox.exe"
+          if (!(Test-Path $exe)) { Get-ChildItem "$env:LOCALAPPDATA\Programs" -Recurse -Filter TomsJukebox.exe | Select -First 3; exit 1 }
+          $p = Start-Process $exe -ArgumentList "--demo","--selftest" -Wait -PassThru
+          Write-Host "installed exe selftest: $($p.ExitCode)"
+          $lnk = Join-Path ([Environment]::GetFolderPath('Programs')) "Tom's Jukebox\Tom's Jukebox.lnk"
+          Write-Host "start menu shortcut exists: $(Test-Path $lnk)"
+          Start-Process "$env:LOCALAPPDATA\Programs\Tom's Jukebox\unins000.exe" -ArgumentList "/VERYSILENT","/SUPPRESSMSGBOXES" -Wait
+          Start-Sleep 3
+          Write-Host "program removed: $(!(Test-Path $exe))"
+          Write-Host "data kept: $(Test-Path "$env:APPDATA\Tom's Jukebox Demo")"
+          if ($p.ExitCode -ne 0) { exit 1 }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: setup
+          path: windows/Output/*.exe
+      - uses: actions/upload-artifact@v4
+        with:
+          name: shots
+          path: shots
